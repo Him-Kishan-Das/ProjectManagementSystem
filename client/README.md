@@ -1,70 +1,99 @@
-# Getting Started with Create React App
+# 🗂️ Project Management System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+![Project Management Screenshot](https://via.placeholder.com/800x400?text=Project+Management+Dashboard) 
+*Example dashboard interface - replace with actual screenshot*
 
-## Available Scripts
+A full-stack web application for managing teams, tasks, and projects with multiple user roles. Built with modern web technologies including React for the frontend and Node.js/Express for the backend, with MongoDB for data storage.
 
-In the project directory, you can run:
+## 🌟 Key Features
 
-### `npm start`
+### 👥 Role-Based Access Control
+- **Admin Portal**: Full system control with user management capabilities
+- **Manager Workspace**: Project oversight with task delegation tools
+- **Member Dashboard**: Task tracking and collaboration interface
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 🛠️ Core Functionality
+- JWT-based authentication system
+- Real-time task updates and notifications
+- Interactive project timelines and Gantt charts
+- Team collaboration with comment threads
+- Comprehensive reporting and analytics
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
 
-### `npm test`
+## 🚀 Installation Guide
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Prerequisites
+- Node.js v16+
+- MongoDB Atlas account or local MongoDB instance
+- Git version control
 
-### `npm run build`
+### Setup Instructions
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/ProjectManagementSystem.git
+   cd ProjectManagementSystem
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+2. **Configure environment variables**
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+    Create .env files in both client and server directories:
+    
+    server/.env
+      ```bash
+      PORT=5000
+      MONGO_URI=mongodb+srv://<username>:<password>@cluster.mongodb.net/project-management
+      JWT_SECRET=your_secure_jwt_secret_here
+      JWT_EXPIRE=30d
+      NODE_ENV=development
 
-### `npm run eject`
+  `
+   client/.env
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+      REACT_APP_API_URL=http://localhost:5000/api/v1
+      REACT_APP_ENV=development
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+3. **Install dependencies**
+   ```bash
+       # Frontend dependencies
+        cd client
+        npm install
+        
+        # Backend dependencies
+        cd ../server
+        npm install
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+4. **Run the appllication**
+     ```bash
+       
+     # In separate terminals:
+     
+    # Start backend server
+    cd server
+    npm run dev
+    
+    # Start frontend development server
+    cd ../client
+    npm start
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 🧰 Technology Stack
 
-## Learn More
+  ### Frontend
+  
+  ### **Technology**
+    - React 18
+    - React Router
+    - Axios
+    - Material UI
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+          
+  2. ### Backend
+  ### **Technology**
+    - Node.js
+    -  Express
+    -  MongoDB
+    -  CORS
+    -  JWT
+    -  Nodemon
+          
+        
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
