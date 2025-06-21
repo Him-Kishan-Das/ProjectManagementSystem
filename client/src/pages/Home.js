@@ -6,12 +6,13 @@ import {
   Box,
   Card,
   CardContent,
+  Button
 } from "@mui/material";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
-import PeopleIcon from "@mui/icons-material/People";
+import CreateProject from "../components/CreateProject";
 
 const Home = ({ sidebarWidth = 260 }) => {
   const stats = [
@@ -42,6 +43,8 @@ const Home = ({ sidebarWidth = 260 }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const [open, setOpen] = useState(false);
+ 
   return (
     <>
       {/* Custom TopBar */}
@@ -64,6 +67,8 @@ const Home = ({ sidebarWidth = 260 }) => {
         </Toolbar>
       </AppBar>
 
+      
+
       {/* Card Grid */}
       <Box
         sx={{
@@ -75,9 +80,13 @@ const Home = ({ sidebarWidth = 260 }) => {
           px: 2,
         }}
       >
+        
+        {/* Create Project Modal Form  */}
+       <CreateProject open={open} setOpen={setOpen} />
+
         {/* Create Project Button styled like a card */}
         <Card
-          onClick={() => alert("Create Project form will open here!")}
+          onClick={() => setOpen(true)}
           sx={{
             width: 250,
             height: 150,
