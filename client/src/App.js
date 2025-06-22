@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import Sidebar from './components/Sidebar';
 import { useState } from 'react';
+import Projects from './pages/Projects';
 
 function App() {
   const [drawerOpen, setDrawerOpen] = useState(true);
@@ -21,6 +22,7 @@ function App() {
         >
           <Routes>
             <Route path="/" element={<Home />} />
+            <Route path="/projects" element={<Projects /> } />
           </Routes>
         </div>
       </div>

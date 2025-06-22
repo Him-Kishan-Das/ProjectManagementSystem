@@ -3,7 +3,7 @@ import Projects from "../models/Project.js";
 
 const router = express.Router();
 
-router.post("/test-project", async (req, res) => {
+router.post("/create-project", async (req, res) => {
   try {
     const project = new Projects({
       name: req.body.name,
