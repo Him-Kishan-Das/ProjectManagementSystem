@@ -15,7 +15,7 @@ const CustomModal = ({ open, onClose, title, children }) => {
   };
 
   return (
-    <Modal
+    <Modal 
       open={open}
       onClose={onClose}
       aria-labelledby="modal-modal-title"
