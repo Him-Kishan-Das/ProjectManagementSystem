@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react"; // Added useEffect
+import { useLocation } from "react-router-dom"; // Import useLocation hook
 import {
   Box,
   Typography,
@@ -144,22 +145,37 @@ const formatDate = (dateString) => {
 };
 
 const Projects = () => {
-  const [selectedTab, setSelectedTab] = useState(0); // 0: All, 1: In Progress, 2: Completed
+  const location = useLocation(); // Get the current location object
+
+  // Initialize selectedTab. Default to 0 (All Projects)
+  // or use the initialTab from location.state if available.
+  const [selectedTab, setSelectedTab] = useState(() => {
+    // Check location state when component initializes
+    if (location.state && typeof location.state.initialTab === 'number') {
+      return location.state.initialTab;
+    }
+    return 0; // Default tab
+  });
+
+  useEffect(() => {
+    if (location.state && typeof location.state.initialTab === 'number' && location.state.initialTab !== selectedTab) {
+      setSelectedTab(location.state.initialTab);
+    }
+  }, [location.state]); // Depend on location.state and selectedTab
 
   const handleChangeTab = (event, newValue) => {
     setSelectedTab(newValue);
   };
 
- 
   const filteredProjects = projectsData.filter((project) => {
     if (selectedTab === 0) {
-      
+      // All Projects
       return true;
     } else if (selectedTab === 1) {
-      
+      // In Progress Projects
       return project.status === "In Progress";
     } else if (selectedTab === 2) {
-      
+      // Completed Projects
       return project.status === "Completed";
     }
     return false;
@@ -171,7 +187,6 @@ const Projects = () => {
         Project Dashboard
       </Typography>
 
-     
       <Paper elevation={3} sx={{ mb: 4, borderRadius: 2 }}>
         <Tabs
           value={selectedTab}
@@ -179,7 +194,7 @@ const Projects = () => {
           indicatorColor="primary"
           textColor="primary"
           centered
-          sx={{ "& .MuiTabs-flexContainer": { flexWrap: "wrap" } }} 
+          sx={{ "& .MuiTabs-flexContainer": { flexWrap: "wrap" } }}
         >
           <Tab label="All Projects" />
           <Tab label="In Progress Projects" />
@@ -187,9 +202,8 @@ const Projects = () => {
         </Tabs>
       </Paper>
 
-      
       <Grid container spacing={4} alignItems="stretch">
-    
+
         {filteredProjects.length > 0 ? (
           filteredProjects.map((project) => (
             <Grid item xs={12} sm={6} md={6} key={project.id} sx={{ pb: 4 }}>
@@ -202,10 +216,10 @@ const Projects = () => {
                   flexDirection: "column",
                   borderRadius: 2,
                   border: "1px solid #ddd",
-                  marginBottom: 2, 
+                  marginBottom: 2,
                 }}
               >
-                
+
                 <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                   <WorkIcon color="primary" sx={{ mr: 1 }} />
                   <Typography variant="h6" component="h3" sx={{ flexGrow: 1 }}>
@@ -219,22 +233,21 @@ const Projects = () => {
                     size="small"
                   />
                 </Box>
-                
+
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{
                     mb: 2,
                     flexGrow: 1,
-                    maxHeight: "80px", // Adjusted maxHeight to give a more consistent appearance. You can fine-tune this value.
-                    overflowY: "auto", // Add vertical scrollbar if content exceeds maxHeight
-                    // minHeight removed as it's handled by flexGrow and parent height
+                    maxHeight: "80px",
+                    overflowY: "auto",
                   }}
                 >
                   {project.description}
                 </Typography>
 
-                {/* Details List (flex-shrink: 0 ensures it doesn't shrink) */}
+                {/* Details List */}
                 <List dense sx={{ p: 0, mb: 1, flexShrink: 0 }}>
                   <ListItem disablePadding>
                     <ListItemIcon sx={{ minWidth: 35 }}>
@@ -260,7 +273,7 @@ const Projects = () => {
                   </ListItem>
                 </List>
 
-                {/* Team Avatars (flex-shrink: 0 ensures it doesn't shrink) */}
+                {/* Team Avatars */}
                 <Box
                   sx={{
                     mt: 2,

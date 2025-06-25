@@ -88,14 +88,16 @@ const Sidebar = () => {
         {/* Sidebar List */}
         <List>
           {/* Dashboard */}
-          <Tooltip title={!drawerOpen ? "Dashboard" : ""} placement="right">
-            <ListItem button>
-              <ListItemIcon>
-                <StackedBarChartIcon />
-              </ListItemIcon>
-              {drawerOpen && <ListItemText primary="Dashboard" />}
-            </ListItem>
-          </Tooltip>
+          <a href="/" rel="noopener noreferrer">
+            <Tooltip title={!drawerOpen ? "Dashboard" : ""} placement="right">
+              <ListItem button>
+                <ListItemIcon>
+                  <StackedBarChartIcon />
+                </ListItemIcon>
+                {drawerOpen && <ListItemText primary="Dashboard" />}
+              </ListItem>
+            </Tooltip>
+          </a>
 
           {/* Projects */}
           <Tooltip title={!drawerOpen ? "Projects" : ""} placement="right">

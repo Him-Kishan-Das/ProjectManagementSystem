@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -15,24 +16,28 @@ import HourglassEmptyIcon from "@mui/icons-material/HourglassEmpty";
 import CreateProject from "../components/CreateProject";
 
 const Home = ({ sidebarWidth = 260 }) => {
+  const navigate = useNavigate();
   const stats = [
     {
       label: "Total Projects",
       value: 42,
       color: "#1976d2",
       icon: <AssignmentIcon fontSize="large" />,
+      tabIndex: 0,
     },
     {
       label: "Completed Projects",
       value: 30,
       color: "#2e7d32",
       icon: <CheckCircleIcon fontSize="large" />,
+      tabIndex: 2,
     },
     {
       label: "In Progress Projects",
       value: 8,
       color: "#f9a825",
       icon: <HourglassEmptyIcon fontSize="large" />,
+      tabIndex: 1,
     },
   ];
 
@@ -43,6 +48,11 @@ const Home = ({ sidebarWidth = 260 }) => {
     return () => clearInterval(interval);
   }, []);
 
+  const handleStatCardClick = (tabIndex) => {
+    navigate("/projects", { state: { initialTab: tabIndex } });
+  };
+
+  
   const [open, setOpen] = useState(false);
  
   return (
@@ -116,6 +126,7 @@ const Home = ({ sidebarWidth = 260 }) => {
         {stats.map((card, index) => (
           <Card
             key={index}
+            onClick={() => handleStatCardClick(card.tabIndex)}
             sx={{
               backgroundColor: card.color,
               color: "#fff",
