@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import {
   Container,
   Paper,
-  // AppBar, // No longer using AppBar, replacing with Box
+  
   Tabs,
   Tab,
-  Box, // Using Box instead of AppBar
+  Box, 
   Typography,
   TextField,
   Button,
@@ -14,39 +14,37 @@ import {
 } from '@mui/material';
 import { styled } from '@mui/system';
 
-// --- Theme Customization (Blue and Purple Palette) ---
+
 const theme = createTheme({
   palette: {
     primary: {
-      main: '#673AB7', // Deep Purple - a rich, inviting primary color
+      main: '#673AB7',
     },
     secondary: {
-      main: '#03A9F4', // Light Blue - a vibrant, contrasting secondary color
+      main: '#03A9F4',
     },
     background: {
-      default: '#E3F2FD', // Very light blue for subtle warmth
-      paper: '#FFFFFF', // Keep paper white for form clarity
+      default: '#E3F2FD', 
+      paper: '#FFFFFF', 
     },
     text: {
-      primary: '#212121', // Dark grey for good contrast
+      primary: '#212121', 
       secondary: '#757575',
     },
   },
   typography: {
     fontFamily: 'Roboto, sans-serif',
-    button: { // Make button text bolder and slightly larger
+    button: { 
       fontWeight: 600,
       fontSize: '0.9rem',
     },
   },
   shape: {
-    borderRadius: 8, // Adjust default border radius for overall consistency
+    borderRadius: 8, 
   }
 });
 
-// --- Styled Components ---
 
-// Background wrapper for the entire page to apply the gradient and centering
 const BackgroundWrapper = styled('div')(({ theme }) => ({
   background: 'linear-gradient(135deg, #3F51B5 10%, #7E57C2 100%)',
   minHeight: '100vh',
@@ -56,7 +54,7 @@ const BackgroundWrapper = styled('div')(({ theme }) => ({
   padding: theme.spacing(2),
 }));
 
-// Paper component for the authentication form, slightly adjusted
+
 const AuthPaper = styled(Paper)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
@@ -80,7 +78,7 @@ const SubmitButton = styled(Button)(({ theme }) => ({
   fontSize: '1rem',
 }));
 
-// --- Login Form Component ---
+
 const LoginForm = () => {
   return (
     <AuthForm noValidate>
@@ -118,8 +116,14 @@ const LoginForm = () => {
   );
 };
 
-// --- Sign Up Form Component ---
+
 const SignUpForm = () => {
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
   return (
     <AuthForm noValidate>
       <TextField
@@ -177,9 +181,9 @@ const SignUpForm = () => {
   );
 };
 
-// --- Main Authentication Page Component ---
+
 function AuthPage() {
-  const [value, setValue] = useState(0); // 0 for Login, 1 for Sign Up
+  const [value, setValue] = useState(0);
 
   const handleChange = (event, newValue) => {
     setValue(newValue);
@@ -196,67 +200,61 @@ function AuthPage() {
             <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
               {value === 0 ? 'Log in to access your dashboard.' : 'Join us and start your journey!'}
             </Typography>
-            {/* Replaced AppBar with Box for more styling control */}
+            
             <Box
               sx={{
                 width: '100%',
                 mt: 2,
-                backgroundColor: theme.palette.primary.main, // Deep Purple background for the tabs container
-                borderRadius: theme.shape.borderRadius * 1.5, // Slightly more rounded corners for the tabs container
-                overflow: 'hidden', // Ensures inner elements respect border radius
-                display: 'flex', // Use flexbox for direct child alignment
-                justifyContent: 'space-around', // Distribute space between tabs
-                alignItems: 'center', // Vertically center tabs
-                height: 56, // Fixed height for the tab container, common for app bars
+                backgroundColor: theme.palette.primary.main, 
+                borderRadius: theme.shape.borderRadius * 1.5, 
+                overflow: 'hidden', 
+                display: 'flex', 
+                justifyContent: 'space-around', 
+                alignItems: 'center',
+                height: 56, 
               }}
             >
               <Tabs
                 value={value}
                 onChange={handleChange}
-                indicatorColor="secondary" // Blue indicator
+                indicatorColor="secondary"
                 textColor="inherit"
-                variant="fullWidth" // Ensures tabs take equal width
+                variant="fullWidth" 
                 aria-label="auth tabs"
-                // Customizing the indicator's appearance
                 TabIndicatorProps={{
                   sx: {
                     height: 4,
                     borderRadius: 2,
-                    bgcolor: theme.palette.secondary.main, // Light Blue color
-                    // The following will make the indicator slightly smaller than the tab itself,
-                    // which can often look more refined than stretching it edge-to-edge.
-                    // If you want it to be full width, you might need to adjust marginX or remove it.
-                    // Or set sx={{ left: '0 !important', right: '0 !important' }} on the indicator if needed.
+                    bgcolor: theme.palette.secondary.main,
                   },
                 }}
                 sx={{
                   '& .MuiTabs-flexContainer': {
-                    height: '100%', // Ensure flex container takes full height of parent Box
+                    height: '100%', 
                   },
                 }}
               >
                 <Tab
-                  label="LOGIN" // Capitalized as in the image
+                  label="LOGIN"
                   sx={{
                     color: 'white',
-                    fontWeight: 'bold', // Match image's bold text
-                    flexGrow: 1, // Allow tab to grow
-                    maxWidth: 'unset', // Allow maxWidth to be controlled by flexGrow/fullWidth
-                    // Styling for the selected tab to give it a lighter background, mimicking the image
+                    fontWeight: 'bold', 
+                    flexGrow: 1, 
+                    maxWidth: 'unset', 
                     '&.Mui-selected': {
-                      backgroundColor: 'rgba(255, 255, 255, 0.15)', // Light transparent overlay for selected tab
-                      borderRadius: theme.shape.borderRadius * 1, // Apply border radius to the selected tab itself
-                      color: 'white', // Ensure text color remains white when selected
+                      backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                      borderRadius: theme.shape.borderRadius * 1,
+                      color: 'white', 
                     },
                   }}
                 />
                 <Tab
-                  label="SIGN UP" // Capitalized as in the image
+                  label="SIGN UP" 
                   sx={{
                     color: 'white',
-                    fontWeight: 'bold', // Match image's bold text
-                    flexGrow: 1, // Allow tab to grow
-                    maxWidth: 'unset', // Allow maxWidth to be controlled by flexGrow/fullWidth
+                    fontWeight: 'bold', 
+                    flexGrow: 1, 
+                    maxWidth: 'unset',
                     '&.Mui-selected': {
                       backgroundColor: 'rgba(255, 255, 255, 0.15)',
                       borderRadius: theme.shape.borderRadius * 1,
