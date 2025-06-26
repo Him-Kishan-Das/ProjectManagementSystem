@@ -18,168 +18,71 @@ import WorkIcon from "@mui/icons-material/Work";
 import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-
-
-const projectsData = [
-  {
-    id: "proj1",
-    name: "Website Redesign",
-    description:
-      "Complete overhaul of the company website to improve user experience and modern aesthetics. This project aims to enhance user engagement and streamline navigation across all devices. We are focusing on a clean, minimalist design with intuitive functionalities to ensure a seamless browsing experience for our customers.", // Example of a longer description
-    status: "In Progress",
-    members: [
-      {
-        id: "m1",
-        name: "Rohan",
-        avatar: "https://placehold.co/30x30/FFA07A/FFFFFF?text=R",
-      },
-      {
-        id: "m2",
-        name: "Soniya",
-        avatar: "https://placehold.co/30x30/90EE90/FFFFFF?text=S",
-      },
-      {
-        id: "m3",
-        name: "Kishan",
-        avatar: "https://placehold.co/30x30/ADD8E6/FFFFFF?text=K",
-      },
-    ],
-    lead: { id: "l1", name: "Anjali Sharma" },
-    createdAt: "2023-01-15",
-  },
-  {
-    id: "proj2",
-    name: "Mobile App Development",
-    description:
-      "Development of a new iOS and Android application for customer engagement. This project involves multiple phases, from initial design to final deployment and post-launch support, focusing on performance and a rich feature set.", // Longer description
-    status: "In Progress",
-    members: [
-      {
-        id: "m4",
-        name: "Priya",
-        avatar: "https://placehold.co/30x30/FFD700/FFFFFF?text=P",
-      },
-      {
-        id: "m5",
-        name: "Amit",
-        avatar: "https://placehold.co/30x30/FF6347/FFFFFF?text=A",
-      },
-      {
-        id: "m6",
-        name: "Deepak",
-        avatar: "https://placehold.co/30x30/DA70D6/FFFFFF?text=D",
-      },
-    ],
-    lead: { id: "l2", name: "Rajesh Kumar" },
-    createdAt: "2022-11-01",
-  },
-  {
-    id: "proj3",
-    name: "Database Migration",
-    description:
-      "Migrating legacy database to a new cloud-based solution for better scalability and performance. This is a critical infrastructure project requiring careful planning and execution to minimize downtime and ensure data integrity.", // Longer description
-    status: "Completed",
-    members: [
-      {
-        id: "m7",
-        name: "Sneha",
-        avatar: "https://placehold.co/30x30/20B2AA/FFFFFF?text=S",
-      },
-      {
-        id: "m8",
-        name: "Vivek",
-        avatar: "https://placehold.co/30x30/FF4500/FFFFFF?text=V",
-      },
-    ],
-    lead: { id: "l3", name: "Pooja Singh" },
-    createdAt: "2022-07-20",
-  },
-  {
-    id: "proj4",
-    name: "Marketing Campaign Launch",
-    description:
-      "Planning and execution of a new digital marketing campaign for product launch, targeting key demographics across various online platforms to maximize reach and conversion rates.", // Longer description
-    status: "In Progress",
-    members: [
-      {
-        id: "m9",
-        name: "Neha",
-        avatar: "https://placehold.co/30x30/8A2BE2/FFFFFF?text=N",
-      },
-      {
-        id: "m10",
-        name: "Rahul",
-        avatar: "https://placehold.co/30x30/A52A2A/FFFFFF?text=R",
-      },
-    ],
-    lead: { id: "l4", name: "Surbhi Gupta" },
-    createdAt: "2023-03-10",
-  },
-  {
-    id: "proj5",
-    name: "Internal Tool Development",
-    description:
-      "Building a custom internal tool to streamline HR processes, including employee onboarding, leave management, and performance reviews, enhancing operational efficiency.", // Longer description
-    status: "Completed",
-    members: [
-      {
-        id: "m1",
-        name: "Rohan",
-        avatar: "https://placehold.co/30x30/FFA07A/FFFFFF?text=R",
-      },
-      {
-        id: "m7",
-        name: "Sneha",
-        avatar: "https://placehold.co/30x30/20B2AA/FFFFFF?text=S",
-      },
-    ],
-    lead: { id: "l5", name: "Gaurav Jain" },
-    createdAt: "2022-05-01",
-  },
-];
-
-
-const formatDate = (dateString) => {
-  const options = { year: "numeric", month: "long", day: "numeric" };
-  return new Date(dateString).toLocaleDateString(undefined, options);
-};
+import axiosInstance from "../api/axiosInstance";
 
 const Projects = () => {
-  const location = useLocation(); // Get the current location object
+  const location = useLocation(); 
 
-  // Initialize selectedTab. Default to 0 (All Projects)
-  // or use the initialTab from location.state if available.
-  const [selectedTab, setSelectedTab] = useState(() => {
-    // Check location state when component initializes
-    if (location.state && typeof location.state.initialTab === 'number') {
-      return location.state.initialTab;
+  const [selectedTab, setSelectedTab] = useState(0);
+  const [projects, setProjects] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const fetchProjects = async () => {
+    setLoading(true);
+    setError(null);
+
+    let endpoint = '';
+    if (selectedTab === 0){
+      endpoint = '/projects/allProjects';
     }
-    return 0; // Default tab
-  });
+    else if (selectedTab === 1){
+      endpoint = '/projects/inProgressProjects';
+    }
+    else if(selectedTab === 2){
+      endpoint = '/projects/completedProjects';
+    }
+
+    try {
+      const response = await axiosInstance.get(endpoint);
+      setProjects(response.data);
+    } catch (error) {
+      console.error("Error fetching projects:", error);
+      setError("Failed to load projects. Please try again.");
+      setProjects([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    if (location.state && typeof location.state.initialTab === 'number' && location.state.initialTab !== selectedTab) {
-      setSelectedTab(location.state.initialTab);
-    }
-  }, [location.state]); // Depend on location.state and selectedTab
+    fetchProjects();
+  }, [selectedTab]); // Call fetchProjects whenever selectedTab changes
 
   const handleChangeTab = (event, newValue) => {
     setSelectedTab(newValue);
   };
 
-  const filteredProjects = projectsData.filter((project) => {
-    if (selectedTab === 0) {
-      // All Projects
-      return true;
-    } else if (selectedTab === 1) {
-      // In Progress Projects
-      return project.status === "In Progress";
-    } else if (selectedTab === 2) {
-      // Completed Projects
-      return project.status === "Completed";
-    }
-    return false;
-  });
+  // Render logic based on loading, error, and projects
+  if (loading) {
+    return (
+      <Box sx={{ p: 3, maxWidth: 1200, margin: "auto" }}>
+        <Typography variant="h6" sx={{ textAlign: "center", mt: 4 }}>
+          Loading projects...
+        </Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ p: 3, maxWidth: 1200, margin: "auto" }}>
+        <Typography variant="h6" color="error" sx={{ textAlign: "center", mt: 4 }}>
+          {error}
+        </Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ p: 3, maxWidth: 1200, margin: "auto" }}>
@@ -203,9 +106,8 @@ const Projects = () => {
       </Paper>
 
       <Grid container spacing={4} alignItems="stretch">
-
-        {filteredProjects.length > 0 ? (
-          filteredProjects.map((project) => (
+        {projects.length > 0 ? (
+          projects.map((project) => (
             <Grid item xs={12} sm={6} md={6} key={project.id} sx={{ pb: 4 }}>
               <Paper
                 elevation={2}
@@ -219,7 +121,6 @@ const Projects = () => {
                   marginBottom: 2,
                 }}
               >
-
                 <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                   <WorkIcon color="primary" sx={{ mr: 1 }} />
                   <Typography variant="h6" component="h3" sx={{ flexGrow: 1 }}>
@@ -247,7 +148,7 @@ const Projects = () => {
                   {project.description}
                 </Typography>
 
-                {/* Details List */}
+                Details List
                 <List dense sx={{ p: 0, mb: 1, flexShrink: 0 }}>
                   <ListItem disablePadding>
                     <ListItemIcon sx={{ minWidth: 35 }}>
@@ -268,7 +169,7 @@ const Projects = () => {
                       <CalendarTodayIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={`Created: ${formatDate(project.createdAt)}`}
+                      primary={`Created: ${project.createdAt}`}
                     />
                   </ListItem>
                 </List>
