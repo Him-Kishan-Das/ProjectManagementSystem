@@ -13,6 +13,7 @@ import {
   ThemeProvider,
 } from '@mui/material';
 import { styled } from '@mui/system';
+import axiosInstance from '../api/axiosInstance';
 
 
 const theme = createTheme({
@@ -119,13 +120,30 @@ const LoginForm = () => {
 
 const SignUpForm = () => {
 
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
+  const [userPassword, setUserPassword] = useState("");
+  const [userConfirmPassword, setUserConfirmPassword] = useState("");
+
+  const handleUserSignup = async (e) =>{
+    try {
+      e.preventDefault();
+      const response = await axiosInstance.post("/create-user",{
+        email: userEmail,
+        name: userName,
+        password: userPassword,
+      })
+      setUserName("");
+      setUserEmail("");
+      setUserPassword("");
+      setUserConfirmPassword("");
+    } catch (error) {
+      console.error("Error: ", error.message);
+    }
+  }                
 
   return (
-    <AuthForm noValidate>
+    <AuthForm noValidate onSubmit={handleUserSignup}>
       <TextField
         variant="outlined"
         margin="normal"
@@ -136,6 +154,8 @@ const SignUpForm = () => {
         name="name"
         autoComplete="name"
         autoFocus
+        onChange={(e)=> setUserName(e.target.value)}
+        value={userName}
       />
       <TextField
         variant="outlined"
@@ -146,6 +166,8 @@ const SignUpForm = () => {
         label="Email Address"
         name="email"
         autoComplete="email"
+        onChange={(e)=> setUserEmail(e.target.value)}
+        value={userEmail}
       />
       <TextField
         variant="outlined"
@@ -157,6 +179,8 @@ const SignUpForm = () => {
         type="password"
         id="password-signup"
         autoComplete="new-password"
+        onChange={(e) => setUserPassword(e.target.value)}
+        value={userPassword}
       />
       <TextField
         variant="outlined"
@@ -168,6 +192,8 @@ const SignUpForm = () => {
         type="password"
         id="confirmPassword-signup"
         autoComplete="new-password"
+        onChange={(e)=> setUserConfirmPassword(e.target.value)}
+        value={userConfirmPassword}
       />
       <SubmitButton
         type="submit"
