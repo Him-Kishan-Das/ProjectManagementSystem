@@ -11,6 +11,7 @@ import {
   createTheme,
   ThemeProvider,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import { styled } from "@mui/system";
 import axiosInstance from "../api/axiosInstance";
 
@@ -76,8 +77,38 @@ const SubmitButton = styled(Button)(({ theme }) => ({
 }));
 
 const LoginForm = () => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
+    setMessage("");
+
+    try {
+      const response = await axiosInstance.post("/login", {
+        email: email,
+        password: password,
+      });
+
+      setMessage(response.data.message || "Login succcessful!");
+      localStorage.setItem("authToken", response.data.token);
+      localStorage.setItem("user", JSON.stringify(response.data.user));
+
+      setMessage(response.data.message || "Login failed. Please try again.");
+      navigate('/');
+
+      
+    } catch (error) {
+      console.error("Network or server error: ", error);
+    }
+  };
+
   return (
-    <AuthForm noValidate>
+    <AuthForm noValidate onSubmit={handleLogin}>
       <TextField
         variant="outlined"
         margin="normal"
@@ -88,6 +119,7 @@ const LoginForm = () => {
         name="email"
         autoComplete="email"
         autoFocus
+        onChange={(e) => setEmail(e.target.value)}
       />
       <TextField
         variant="outlined"
@@ -99,10 +131,23 @@ const LoginForm = () => {
         type="password"
         id="password-login"
         autoComplete="current-password"
+        onChange={(e) => setPassword(e.target.value)}
       />
       <SubmitButton type="submit" fullWidth variant="contained" color="primary">
         Sign In
       </SubmitButton>
+
+      {message && (
+          <Typography
+            sx={{
+              marginTop: '1rem',
+              color: message.includes('successful') ? 'green' : 'red',
+              textAlign: 'center',
+            }}
+          >
+            {message}
+          </Typography>
+        )}
     </AuthForm>
   );
 };
@@ -227,7 +272,7 @@ const SignUpForm = () => {
             borderRadius: "4px",
             textAlign: "center",
             color: messageType === "error" ? "white" : "green",
-            backgroundColor: messageType === "error" ? "#f44336" : "#e8f5e9", 
+            backgroundColor: messageType === "error" ? "#f44336" : "#e8f5e9",
             border:
               messageType === "error"
                 ? "1px solid #d32f2f"
