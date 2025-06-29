@@ -22,6 +22,8 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../api/axiosInstance";
 
 const Sidebar = () => {
   const [drawerOpen, setDrawerOpen] = useState(true);
@@ -37,6 +39,26 @@ const Sidebar = () => {
 
   // Example project names — you can replace with dynamic data
   const projectNames = ["Project Alpha", "Project Bravo", "Project Gamma"];
+
+
+  const navigate = useNavigate();
+  const handleLogout = async () =>{
+
+    try {
+      await axiosInstance.post('/logout', {});
+
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+
+      navigate('/auth');
+
+    } catch (error) {
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('user');
+
+      navigate('/auth');
+    }
+  }
 
   return (
     <>
@@ -90,7 +112,7 @@ const Sidebar = () => {
           {/* Dashboard */}
           <a href="/" rel="noopener noreferrer">
             <Tooltip title={!drawerOpen ? "Dashboard" : ""} placement="right">
-              <ListItem button>
+              <ListItem button sx={{ cursor: 'pointer' }}>
                 <ListItemIcon>
                   <StackedBarChartIcon />
                 </ListItemIcon>
@@ -101,7 +123,7 @@ const Sidebar = () => {
 
           {/* Projects */}
           <Tooltip title={!drawerOpen ? "Projects" : ""} placement="right">
-            <ListItem button onClick={toggleProjects}>
+            <ListItem button onClick={toggleProjects} sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <FolderIcon />
               </ListItemIcon>
@@ -114,7 +136,7 @@ const Sidebar = () => {
           <Collapse in={expandedProjects} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {projectNames.map((name) => (
-                <ListItem button key={name} sx={{ pl: 4 }}>
+                <ListItem button key={name} sx={{ pl: 4, cursor: 'pointer' }}>
                   <ListItemIcon>
                     <TaskIcon />
                   </ListItemIcon>
@@ -126,7 +148,7 @@ const Sidebar = () => {
 
           {/* Members */}
           <Tooltip title={!drawerOpen ? "Members" : ""} placement="right">
-            <ListItem button>
+            <ListItem button sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <GroupsIcon />
               </ListItemIcon>
@@ -136,7 +158,7 @@ const Sidebar = () => {
 
           {/* Admin */}
           <Tooltip title={!drawerOpen ? "Admin" : ""} placement="right">
-            <ListItem button>
+            <ListItem button sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <AdminPanelSettingsIcon />
               </ListItemIcon>
@@ -146,7 +168,7 @@ const Sidebar = () => {
 
           {/* Profile */}
           <Tooltip title={!drawerOpen ? "Profile" : ""} placement="right">
-            <ListItem button>
+            <ListItem button sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <AccountCircleIcon />
               </ListItemIcon>
@@ -155,8 +177,8 @@ const Sidebar = () => {
           </Tooltip>
 
           {/* Logout */}
-          <Tooltip title={!drawerOpen ? "Logout" : ""} placement="right">
-            <ListItem button>
+          <Tooltip title={!drawerOpen ? "Logout" : ""} placement="right" onClick={handleLogout}>
+            <ListItem button sx={{ cursor: 'pointer' }}>
               <ListItemIcon>
                 <LogoutIcon />
               </ListItemIcon>
