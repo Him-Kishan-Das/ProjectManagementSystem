@@ -113,3 +113,15 @@ export const loginUser = async (req, res) => {
 export const logoutUser = (req, res) =>{
     res.status(200).json({ message: "Logout successful" });
 }
+
+
+
+export const getAllUsers = async (req, res) => {
+    try {
+        const users = await Users.find({});
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error during fetching users data: ", error);
+        res.status(404).json({ message: "Users Data fetching failed", error: error.message });
+    }
+}
