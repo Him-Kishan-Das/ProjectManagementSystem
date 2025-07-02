@@ -125,3 +125,33 @@ export const getAllUsers = async (req, res) => {
         res.status(404).json({ message: "Users Data fetching failed", error: error.message });
     }
 }
+
+export const getPendingUsers = async (req, res) => {
+    try {
+        const pendingUsers = await Users.find({status: "pending"});
+        res.status(200).json(pendingUsers);
+    } catch (error) {
+        console.error("Error during fetching pending users data: ", error);
+        res.status(404).json({ message: "Pending Users Data fetching failed", error: error.message });
+    }
+}
+
+export const getActiveUsers = async (req, res) => {
+    try {
+        const activeUsers = await Users.find({ status: "active" });
+        res.status(200).json(activeUsers);
+    } catch (error) {
+        console.error("Error during fetching active users data: ", error);
+        res.status(404).json({ message: "Active Users Data fetching failed", error: error.message });
+    }
+}
+
+export const getRejectedUsers = async (req, res) => {
+    try {
+        const rejectedUsers = await Users.find({ status: "rejectec" });
+        res.status(200).json(rejectedUsers);
+    } catch (error) {
+        console.error("Error during fetching rejected users data: ", error);
+        res.status(404).json({ message: "Rejected Users Data fetching failed", error: error.message });
+    }
+}
