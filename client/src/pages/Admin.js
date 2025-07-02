@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Typography,
@@ -16,6 +16,7 @@ import {
 } from '@mui/material';
 import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import axiosInstance from '../api/axiosInstance';
 
 
 const simpleAdminTheme = createTheme({
@@ -120,21 +121,6 @@ function a11yProps(index) {
   };
 }
 
-// Mock Data for the Tables
-const usersData = {
-  pending: [
-    { id: 1, name: "Jhoomar", email: "jhoomar12@gmail.com" },
-    { id: 2, name: "Alice Smith", email: "alice.s@example.com" },
-  ],
-  rejected: [
-    { id: 3, name: "Bob Johnson", email: "bob.j@example.com" },
-    { id: 4, name: "Carol White", email: "carol.w@example.com" },
-  ],
-  assigned: [
-    { id: 5, name: "David Lee", email: "david.l@example.com" },
-    { id: 6, name: "Eve Green", email: "eve.g@example.com" },
-  ],
-};
 
 function AdminPanel() {
   const [currentTab, setCurrentTab] = useState(0); // 0: Pending, 1: Rejected/Unassigned, 2: Assigned
@@ -150,7 +136,7 @@ function AdminPanel() {
     role: "admin",
   };
 
-  // Filter users based on search term (simple case-insensitive contains)
+  
   const filterUsers = (users) => {
     if (!searchTerm) return users;
     return users.filter(user =>
@@ -158,6 +144,54 @@ function AdminPanel() {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   };
+
+  
+  const [pendingUsers, setPendingUsers] = useState([]);
+  const fetchPendingUsers = async () => {
+    try {
+      const response = await axiosInstance.get('/getPendingUsers');
+      setPendingUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching pending users: ', error);
+      setPendingUsers([]);
+    }
+  };
+
+
+  const [rejectedUsers, setRejectedUsers] = useState([]);
+  const fetchRejectedUsers = async () => {
+    try {
+      const response = await axiosInstance.get('/getRejectedUsers');
+      setRejectedUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching rejected users: ', error);
+      setRejectedUsers([]);
+    }
+  };
+
+
+  const [activeUsers, setActiveUsers] = useState([]);
+  const fetchActiveUsers = async () => {
+    try {
+      const response = await axiosInstance.get('/getActiveUsers');
+      setActiveUsers(response.data);
+    } catch (error) {
+      console.error('Error fetching active users: ', error);
+      setActiveUsers([]);
+    }
+  };
+
+  useEffect(() => {
+    if(currentTab === 0){
+      fetchPendingUsers();
+    }
+    else if(currentTab === 1){
+      fetchRejectedUsers();
+    }
+    else if(currentTab === 2){
+      fetchActiveUsers();
+    }
+  }, [currentTab])
 
   // Render a generic user table for a given tab's data
   const renderUserTable = (data, type) => (
@@ -293,15 +327,15 @@ function AdminPanel() {
 
         {/* Tab Content Panels */}
         <CustomTabPanel value={currentTab} index={0}>
-          {renderUserTable(usersData.pending, 'pending')}
+          {renderUserTable(filterUsers(pendingUsers), 'pending')}
         </CustomTabPanel>
 
         <CustomTabPanel value={currentTab} index={1}>
-          {renderUserTable(usersData.rejected, 'rejected')}
+          {renderUserTable(filterUsers(rejectedUsers), 'rejected')}
         </CustomTabPanel>
 
         <CustomTabPanel value={currentTab} index={2}>
-          {renderUserTable(usersData.assigned, 'assigned')}
+          {renderUserTable(filterUsers(activeUsers), 'assigned')}
         </CustomTabPanel>
       </Box>
     </ThemeProvider>
