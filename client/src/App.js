@@ -6,6 +6,7 @@ import Projects from './pages/Projects';
 import AuthPage from './pages/Auth';
 import PrivateRoute from './components/PrivateRoute';
 import { AuthProvider } from './contexts/AuthContext';
+import Admin from './pages/Admin';
 
 function App() {
   const [drawerOpen, setDrawerOpen] = useState(true);
@@ -35,6 +36,7 @@ function App() {
                   <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/projects" element={<Projects />} />
+                    <Route path='/admin-panel' element={<Admin />} />
                   </Routes>
                 </div>
               </div>

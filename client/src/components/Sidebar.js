@@ -42,6 +42,15 @@ const Sidebar = () => {
 
 
   const navigate = useNavigate();
+
+  const handleDashboardNavigate = () => {
+    navigate('/');
+  }
+
+  const handleAdminNavigate = () => {
+    navigate('/admin-panel');
+  };
+
   const handleLogout = async () =>{
 
     try {
@@ -110,16 +119,16 @@ const Sidebar = () => {
         {/* Sidebar List */}
         <List>
           {/* Dashboard */}
-          <a href="/" rel="noopener noreferrer">
+          
             <Tooltip title={!drawerOpen ? "Dashboard" : ""} placement="right">
-              <ListItem button sx={{ cursor: 'pointer' }}>
+              <ListItem button onClick={handleDashboardNavigate} sx={{ cursor: 'pointer' }}>
                 <ListItemIcon>
                   <StackedBarChartIcon />
                 </ListItemIcon>
                 {drawerOpen && <ListItemText primary="Dashboard" />}
               </ListItem>
             </Tooltip>
-          </a>
+          
 
           {/* Projects */}
           <Tooltip title={!drawerOpen ? "Projects" : ""} placement="right">
@@ -158,7 +167,7 @@ const Sidebar = () => {
 
           {/* Admin */}
           <Tooltip title={!drawerOpen ? "Admin" : ""} placement="right">
-            <ListItem button sx={{ cursor: 'pointer' }}>
+            <ListItem button sx={{ cursor: 'pointer' }} onClick={handleAdminNavigate}>
               <ListItemIcon>
                 <AdminPanelSettingsIcon />
               </ListItemIcon>
