@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import {
   Box,
   Typography,
@@ -13,31 +13,35 @@ import {
   TableHead,
   TableRow,
   Button,
-} from '@mui/material';
-import { createTheme, ThemeProvider, styled } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import axiosInstance from '../api/axiosInstance';
-
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+} from "@mui/material";
+import { createTheme, ThemeProvider, styled } from "@mui/material/styles";
+import CssBaseline from "@mui/material/CssBaseline";
+import axiosInstance from "../api/axiosInstance";
+import CustomModal from "../components/CustomModal"; 
 
 const simpleAdminTheme = createTheme({
   palette: {
     primary: {
-      main: '#424242', // Dark gray for primary elements
+      main: "#424242", 
     },
     secondary: {
-      main: '#FFC107', // Amber for accents (if needed, though image is minimal)
+      main: "#FFC107", 
     },
     background: {
-      default: '#f0f2f5', // Light background for the page
-      paper: '#ffffff', // White for cards/panels
+      default: "#f0f2f5", 
+      paper: "#ffffff", 
     },
     text: {
-      primary: '#212121',
-      secondary: '#616161',
+      primary: "#212121",
+      secondary: "#616161",
     },
   },
   typography: {
-    fontFamily: 'Roboto, Arial, sans-serif',
+    fontFamily: "Roboto, Arial, sans-serif",
     h6: {
       fontWeight: 500,
     },
@@ -46,49 +50,49 @@ const simpleAdminTheme = createTheme({
     MuiTab: {
       styleOverrides: {
         root: {
-          textTransform: 'none', // Prevent uppercase tabs
+          textTransform: "none", // Prevent uppercase tabs
           fontWeight: 600,
-          '&.Mui-selected': {
-            color: '#424242', // Selected tab text color
-            backgroundColor: '#e0e0e0', // Light gray background for selected tab
-            borderRadius: '4px 4px 0 0', // Rounded top corners
+          "&.Mui-selected": {
+            color: "#424242", // Selected tab text color
+            backgroundColor: "#e0e0e0", // Light gray background for selected tab
+            borderRadius: "4px 4px 0 0", // Rounded top corners
           },
         },
       },
     },
     MuiTabs: {
-        styleOverrides: {
-            indicator: {
-                display: 'none', // Hide the default indicator
-            },
+      styleOverrides: {
+        indicator: {
+          display: "none", // Hide the default indicator
         },
+      },
     },
     MuiPaper: {
-        styleOverrides: {
-            root: {
-                borderRadius: '8px', // Slightly rounded corners for all papers
-            },
+      styleOverrides: {
+        root: {
+          borderRadius: "8px", // Slightly rounded corners for all papers
         },
+      },
     },
     MuiButton: {
-        styleOverrides: {
-            root: {
-                textTransform: 'none', // Prevent uppercase button text
-                fontWeight: 600,
-            },
+      styleOverrides: {
+        root: {
+          textTransform: "none", // Prevent uppercase button text
+          fontWeight: 600,
         },
+      },
     },
     MuiTableCell: {
-        styleOverrides: {
-            head: {
-                fontWeight: 600,
-                backgroundColor: '#f5f5f5', // Light background for table header
-                color: '#424242',
-            },
-            body: {
-                fontSize: '0.9rem',
-            },
+      styleOverrides: {
+        head: {
+          fontWeight: 600,
+          backgroundColor: "#f5f5f5", // Light background for table header
+          color: "#424242",
         },
+        body: {
+          fontSize: "0.9rem",
+        },
+      },
     },
   },
 });
@@ -106,7 +110,9 @@ function CustomTabPanel(props) {
       {...other}
     >
       {value === index && (
-        <Box sx={{ p: 2 }}> {/* Reduced padding for table content */}
+        <Box sx={{ p: 2 }}>
+          {" "}
+          {/* Reduced padding for table content */}
           {children}
         </Box>
       )}
@@ -117,85 +123,140 @@ function CustomTabPanel(props) {
 function a11yProps(index) {
   return {
     id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+    "aria-controls": `simple-tabpanel-${index}`,
   };
 }
 
-
 function AdminPanel() {
   const [currentTab, setCurrentTab] = useState(0); // 0: Pending, 1: Rejected/Unassigned, 2: Assigned
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
 
   const handleTabChange = (event, newValue) => {
     setCurrentTab(newValue);
   };
 
+  const userRaw = localStorage.getItem("user");
+  const user = JSON.parse(userRaw);
   const adminDetails = {
-    name: "Him Kishan Das",
-    email: "himkishandablogger@gmail.com",
+    name: user.name,
+    email: user.email,
     role: "admin",
   };
 
-  
   const filterUsers = (users) => {
     if (!searchTerm) return users;
-    return users.filter(user =>
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    return users.filter(
+      (user) =>
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
   };
 
-  
   const [pendingUsers, setPendingUsers] = useState([]);
   const fetchPendingUsers = async () => {
     try {
-      const response = await axiosInstance.get('/getPendingUsers');
+      const response = await axiosInstance.get("/getPendingUsers");
       setPendingUsers(response.data);
     } catch (error) {
-      console.error('Error fetching pending users: ', error);
+      console.error("Error fetching pending users: ", error);
       setPendingUsers([]);
     }
   };
 
-
   const [rejectedUsers, setRejectedUsers] = useState([]);
   const fetchRejectedUsers = async () => {
     try {
-      const response = await axiosInstance.get('/getRejectedUsers');
+      const response = await axiosInstance.get("/getRejectedUsers");
       setRejectedUsers(response.data);
     } catch (error) {
-      console.error('Error fetching rejected users: ', error);
+      console.error("Error fetching rejected users: ", error);
       setRejectedUsers([]);
     }
   };
 
-
   const [activeUsers, setActiveUsers] = useState([]);
   const fetchActiveUsers = async () => {
     try {
-      const response = await axiosInstance.get('/getActiveUsers');
+      const response = await axiosInstance.get("/getActiveUsers");
       setActiveUsers(response.data);
     } catch (error) {
-      console.error('Error fetching active users: ', error);
+      console.error("Error fetching active users: ", error);
       setActiveUsers([]);
     }
   };
 
+  // State for the Assign Role dialog, now using CustomModal
+  const [openAssignRoleModal, setOpenAssignRoleModal] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedRole, setSelectedRole] = useState("");
+
   useEffect(() => {
-    if(currentTab === 0){
+    if (currentTab === 0) {
       fetchPendingUsers();
-    }
-    else if(currentTab === 1){
+    } else if (currentTab === 1) {
       fetchRejectedUsers();
-    }
-    else if(currentTab === 2){
+    } else if (currentTab === 2) {
       fetchActiveUsers();
     }
-  }, [currentTab])
+  }, [currentTab]);
+
+  // Function to handle opening the assign role modal
+  const handleAssignRoleClick = (user) => {
+    setSelectedUser(user);
+    setOpenAssignRoleModal(true);
+  };
+
+  // Function to handle closing the assign role modal
+  const handleCloseAssignRoleModal = () => {
+    setOpenAssignRoleModal(false);
+    setSelectedUser(null);
+    setSelectedRole(""); // Reset selected role
+  };
+
+  // Function to handle role change in the dropdown
+  const handleRoleChange = (event) => {
+    setSelectedRole(event.target.value);
+  };
+
+  // Function to handle assigning the role
+  const handleAssignRole = async () => {
+    if (!selectedUser || !selectedRole) {
+      console.error("User or role not selected.");
+      return;
+    }
+
+    try {
+      // Assuming you have an API endpoint to update user roles
+      // For demonstration, let's just log the action and simulate success
+      console.log(`Assigning role '${selectedRole}' to user '${selectedUser.name}' (ID: ${selectedUser.id})`);
+      
+      // Replace this with your actual API call:
+      // await axiosInstance.post("/assignUserRole", {
+      //   userId: selectedUser.id,
+      //   role: selectedRole,
+      // });
+
+      // Simulate API success delay
+      await new Promise(resolve => setTimeout(resolve, 500)); 
+
+      // Refresh the relevant user lists after successful assignment
+      fetchPendingUsers();
+      fetchActiveUsers();
+      handleCloseAssignRoleModal(); // Close the modal
+    } catch (error) {
+      console.error("Error assigning role: ", error);
+      // Handle error (e.g., show an error message to the user)
+    }
+  };
 
   // Render a generic user table for a given tab's data
   const renderUserTable = (data, type) => (
-    <TableContainer component={Paper} sx={{ mt: 2, border: '1px solid #e0e0e0' }}> {/* Added subtle border */}
+    <TableContainer
+      component={Paper}
+      sx={{ mt: 2, border: "1px solid #e0e0e0" }}
+    >
+      {" "}
+      {/* Added subtle border */}
       <Table sx={{ minWidth: 650 }} aria-label={`${type} users table`}>
         <TableHead>
           <TableRow>
@@ -209,30 +270,68 @@ function AdminPanel() {
             filterUsers(data).map((user) => (
               <TableRow
                 key={user.id}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
               >
                 <TableCell component="th" scope="row">
                   {user.name}
                 </TableCell>
                 <TableCell>{user.email}</TableCell>
                 <TableCell align="right">
-                  {type === 'pending' && (
+                  {type === "pending" && (
                     <>
-                      <Button variant="text" size="small" sx={{ color: '#4CAF50', mr: 1, '&:hover': { backgroundColor: 'rgba(76, 175, 80, 0.04)' } }}>
+                      <Button
+                        variant="text"
+                        size="small"
+                        sx={{
+                          color: "#4CAF50",
+                          mr: 1,
+                          "&:hover": {
+                            backgroundColor: "rgba(76, 175, 80, 0.04)",
+                          },
+                        }}
+                        onClick={() => handleAssignRoleClick(user)} // Attach click handler
+                      >
                         Assign Role
                       </Button>
-                      <Button variant="text" size="small" sx={{ color: '#F44336', '&:hover': { backgroundColor: 'rgba(244, 67, 54, 0.04)' } }}>
+                      <Button
+                        variant="text"
+                        size="small"
+                        sx={{
+                          color: "#F44336",
+                          "&:hover": {
+                            backgroundColor: "rgba(244, 67, 54, 0.04)",
+                          },
+                        }}
+                      >
                         Reject
                       </Button>
                     </>
                   )}
-                  {type === 'rejected' && (
-                    <Button variant="text" size="small" sx={{ color: '#2196F3', '&:hover': { backgroundColor: 'rgba(33, 150, 243, 0.04)' } }}>
+                  {type === "rejected" && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      sx={{
+                        color: "#2196F3",
+                        "&:hover": {
+                          backgroundColor: "rgba(33, 150, 243, 0.04)",
+                        },
+                      }}
+                    >
                       Re-evaluate
                     </Button>
                   )}
-                  {type === 'assigned' && (
-                    <Button variant="text" size="small" sx={{ color: '#F44336', '&:hover': { backgroundColor: 'rgba(244, 67, 54, 0.04)' } }}>
+                  {type === "assigned" && (
+                    <Button
+                      variant="text"
+                      size="small"
+                      sx={{
+                        color: "#F44336",
+                        "&:hover": {
+                          backgroundColor: "rgba(244, 67, 54, 0.04)",
+                        },
+                      }}
+                    >
                       Revoke Role
                     </Button>
                   )}
@@ -242,7 +341,11 @@ function AdminPanel() {
           ) : (
             <TableRow>
               <TableCell colSpan={3} align="center">
-                <Typography variant="body2" color="textSecondary" sx={{ py: 2 }}>
+                <Typography
+                  variant="body2"
+                  color="textSecondary"
+                  sx={{ py: 2 }}
+                >
                   No users found in this category.
                 </Typography>
               </TableCell>
@@ -256,12 +359,30 @@ function AdminPanel() {
   return (
     <ThemeProvider theme={simpleAdminTheme}>
       <CssBaseline />
-      <Box sx={{ p: 3, backgroundColor: simpleAdminTheme.palette.background.default, minHeight: '100vh' }}>
+      <Box
+        sx={{
+          p: 3,
+          backgroundColor: simpleAdminTheme.palette.background.default,
+          minHeight: "100vh",
+        }}
+      >
         {/* Top Header Admin Role Manager */}
-        <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
-          <img src="https://mui.com/static/images/avatar/1.jpg" alt="Logo" style={{ height: 40, marginRight: 10, borderRadius: '50%' }} /> {/* Placeholder logo */}
-          <Typography variant="h5" component="h1" sx={{ fontWeight: 600, color: simpleAdminTheme.palette.primary.main }}>
-            Admin Role Manager
+        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+          <img
+            src="https://mui.com/static/images/avatar/1.jpg"
+            alt="Logo"
+            style={{ height: 40, marginRight: 10, borderRadius: "50%" }}
+          />{" "}
+          {/* Placeholder logo */}
+          <Typography
+            variant="h5"
+            component="h1"
+            sx={{
+              fontWeight: 600,
+              color: simpleAdminTheme.palette.primary.main,
+            }}
+          >
+            Super Admin
           </Typography>
         </Box>
 
@@ -285,36 +406,35 @@ function AdminPanel() {
           placeholder="Search users by name or email"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ mb: 3, '& fieldset': { borderRadius: '8px' } }} // Match paper border radius
+          sx={{ mb: 3, "& fieldset": { borderRadius: "8px" } }} // Match paper border radius
         />
 
         {/* Tabs Section */}
-        {/* Adjusted to match the image's tab styling closely */}
-        <Box sx={{ width: '100%', mb: 2 }}>
+        <Box sx={{ width: "100%", mb: 2 }}>
           <Tabs
             value={currentTab}
             onChange={handleTabChange}
             aria-label="admin roles tabs"
-            TabIndicatorProps={{ style: { display: 'none' } }} // Hide default Material-UI indicator
+            TabIndicatorProps={{ style: { display: "none" } }} // Hide default Material-UI indicator
             sx={{
-              '& .MuiTabs-flexContainer': {
-                justifyContent: 'flex-start', // Align tabs to the left
+              "& .MuiTabs-flexContainer": {
+                justifyContent: "flex-start", // Align tabs to the left
               },
-              '& .MuiTab-root': {
-                minHeight: '48px', // Standard tab height
-                padding: '12px 24px', // Adjust padding for a button-like feel
-                marginRight: '8px', // Space between tabs
-                borderRadius: '8px', // Rounded corners for tab buttons
-                backgroundColor: '#e0e0e0', // Background for unselected tabs
+              "& .MuiTab-root": {
+                minHeight: "48px", // Standard tab height
+                padding: "12px 24px", // Adjust padding for a button-like feel
+                marginRight: "8px", // Space between tabs
+                borderRadius: "8px", // Rounded corners for tab buttons
+                backgroundColor: "#e0e0e0", // Background for unselected tabs
                 color: simpleAdminTheme.palette.text.primary,
-                '&.Mui-selected': {
-                  backgroundColor: '#ffffff', // White background for selected tab
-                  boxShadow: '0px 2px 4px rgba(0,0,0,0.1)', // Subtle shadow for selected tab
+                "&.Mui-selected": {
+                  backgroundColor: "#ffffff", // White background for selected tab
+                  boxShadow: "0px 2px 4px rgba(0,0,0,0.1)", // Subtle shadow for selected tab
                   zIndex: 1, // Bring selected tab to front
                   color: simpleAdminTheme.palette.primary.main, // Darker text for selected
                 },
-                '&:hover': {
-                    backgroundColor: '#d0d0d0', // Slightly darker hover for unselected
+                "&:hover": {
+                  backgroundColor: "#d0d0d0", // Slightly darker hover for unselected
                 },
               },
             }}
@@ -327,17 +447,47 @@ function AdminPanel() {
 
         {/* Tab Content Panels */}
         <CustomTabPanel value={currentTab} index={0}>
-          {renderUserTable(filterUsers(pendingUsers), 'pending')}
+          {renderUserTable(filterUsers(pendingUsers), "pending")}
         </CustomTabPanel>
 
         <CustomTabPanel value={currentTab} index={1}>
-          {renderUserTable(filterUsers(rejectedUsers), 'rejected')}
+          {renderUserTable(filterUsers(rejectedUsers), "rejected")}
         </CustomTabPanel>
 
         <CustomTabPanel value={currentTab} index={2}>
-          {renderUserTable(filterUsers(activeUsers), 'assigned')}
+          {renderUserTable(filterUsers(activeUsers), "assigned")}
         </CustomTabPanel>
       </Box>
+
+      {/* CustomModal for Assign Role */}
+      <CustomModal
+        open={openAssignRoleModal}
+        onClose={handleCloseAssignRoleModal}
+        title={`Assign Role to ${selectedUser?.name || "User"}`}
+      >
+        <FormControl fullWidth sx={{ mt: 2, mb: 2 }}>
+          <InputLabel id="role-select-label">Select Role</InputLabel>
+          <Select
+            labelId="role-select-label"
+            id="role-select"
+            value={selectedRole}
+            label="Select Role"
+            onChange={handleRoleChange}
+          >
+            <MenuItem value="manager">Manager</MenuItem>
+            <MenuItem value="team_member">Team Member</MenuItem>
+            <MenuItem value="admin">Admin</MenuItem>
+          </Select>
+        </FormControl>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
+          <Button onClick={handleCloseAssignRoleModal} variant="outlined">
+            Cancel
+          </Button>
+          <Button onClick={handleAssignRole} variant="contained" color="primary">
+            Assign
+          </Button>
+        </Box>
+      </CustomModal>
     </ThemeProvider>
   );
 }
