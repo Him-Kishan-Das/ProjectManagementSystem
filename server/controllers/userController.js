@@ -186,3 +186,36 @@ export const assignUserRoles = async (req, res) => {
         res.status(500).json({message: "Server error during role assignment.", error: error.message});
     }
 }
+
+
+export const revokeUserRole = async (req, res) => {
+    try {
+        const {userId} = req.body;
+
+        if(!userId){
+            return res.status(400).json({ message: "User ID is required to revoke a role." });
+        }
+
+        const user = await Users.findById(userId);
+
+        if(!user){
+            return res.status(404).json({message: "User not found."});
+        }
+
+        user.role = null;
+        user.status = "rejected";
+
+        await user.save();
+
+        res.status(200).json({
+            message: "User role revoked successfully and status set to 'rejected'.",
+            user
+        });
+    } catch (error) {
+        console.error("Error revoking user role: ", error);
+        res.status(500).json({
+            message: "An error occured while revoking the user role.",
+            error: error.message
+        });
+    }
+};

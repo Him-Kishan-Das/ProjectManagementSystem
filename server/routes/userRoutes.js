@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { createUser, loginUser, logoutUser, getAllUsers, getPendingUsers, getActiveUsers, getRejectedUsers, assignUserRoles } from "../controllers/userController.js";
+import { createUser, loginUser, logoutUser, getAllUsers, getPendingUsers, getActiveUsers, getRejectedUsers, assignUserRoles, revokeUserRole } from "../controllers/userController.js";
 
 const router = express.Router();
 
@@ -13,5 +13,6 @@ router.get("/getRejectedUsers", getRejectedUsers);
 
 
 router.post("/assignUserRole", assignUserRoles);
+router.put("/revokeUserRole", revokeUserRole);
 
 export default router;
