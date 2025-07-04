@@ -148,7 +148,7 @@ export const getActiveUsers = async (req, res) => {
 
 export const getRejectedUsers = async (req, res) => {
     try {
-        const rejectedUsers = await Users.find({ status: "rejectec" });
+        const rejectedUsers = await Users.find({ status: "rejected" });
         res.status(200).json(rejectedUsers);
     } catch (error) {
         console.error("Error during fetching rejected users data: ", error);

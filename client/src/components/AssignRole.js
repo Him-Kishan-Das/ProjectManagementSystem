@@ -5,19 +5,18 @@ import {
   FormControl,
   InputLabel,
   Select,
-  MenuItem,
-  Typography,
+  MenuItem
 } from "@mui/material";
 import CustomModal from "./CustomModal";
-import axiosInstance from "../api/axiosInstance"; // Assuming axiosInstance is available globally or passed
+import axiosInstance from "../api/axiosInstance"; 
 
 const AssignRole = ({ open, user, onClose, onRoleAssigned }) => {
   const [selectedRole, setSelectedRole] = useState("");
 
-  // Reset selectedRole when the modal opens with a new user
+  
   useEffect(() => {
     if (open) {
-      setSelectedRole(""); // Clear selection on open
+      setSelectedRole(""); 
     }
   }, [open, user]);
 
@@ -32,22 +31,23 @@ const AssignRole = ({ open, user, onClose, onRoleAssigned }) => {
     }
 
     try {
+      console.log(user);
       console.log(`Assigning role '${selectedRole}' to user '${user.name}' (ID: ${user.id})`);
 
-      // Replace this with your actual API call:
+      
       await axiosInstance.post("/assignUserRole", {
-        userId: user.id,
+        userId: user._id,
         role: selectedRole,
       });
 
-      // Simulate API success delay
+      
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      onRoleAssigned(); // Call the callback to refresh lists in parent
-      onClose(); // Close the modal after successful assignment
+      onRoleAssigned(); 
+      onClose(); 
     } catch (error) {
       console.error("Error assigning role: ", error);
-      // Handle error (e.g., show an error message to the user)
+      
     }
   };
 

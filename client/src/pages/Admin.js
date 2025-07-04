@@ -13,11 +13,14 @@ import {
   TableHead,
   TableRow,
   Button,
+  // Removed Dialog and related imports as they are now in separate components
 } from "@mui/material";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import axiosInstance from "../api/axiosInstance";
-import AssignRole from "../components/AssignRole"; // Import the new component
+import AssignRole from "../components/AssignRole";
+import RejectUser from "../components/RejectUser";   // Import the new RejectUser component
+import RevokeRole from "../components/RevokeRole"; // Import the new RevokeRole component
 
 const simpleAdminTheme = createTheme({
   palette: {
@@ -178,8 +181,10 @@ function AdminPanel() {
     }
   };
 
-  // State for the Assign Role dialog, now controlled by AdminPanel and passed to AssignRole
+  // States for modals/dialogs
   const [openAssignRoleModal, setOpenAssignRoleModal] = useState(false);
+  const [openRejectUserModal, setOpenRejectUserModal] = useState(false); // New state for RejectUser modal
+  const [openRevokeRoleModal, setOpenRevokeRoleModal] = useState(false); // New state for RevokeRole modal
   const [selectedUser, setSelectedUser] = useState(null);
 
   useEffect(() => {
@@ -192,17 +197,43 @@ function AdminPanel() {
     }
   }, [currentTab]);
 
-  // Function to handle opening the assign role modal
+  // Handler to open Assign Role modal
   const handleAssignRoleClick = (user) => {
     setSelectedUser(user);
     setOpenAssignRoleModal(true);
   };
 
-  // Callback function to refresh user lists after a role assignment
+  // Handler to open Reject User modal
+  const handleRejectUserClick = (user) => {
+    setSelectedUser(user);
+    setOpenRejectUserModal(true);
+  };
+
+  // Handler to open Revoke Role modal
+  const handleRevokeRoleClick = (user) => {
+    setSelectedUser(user);
+    setOpenRevokeRoleModal(true);
+  };
+
+  // Callback to refresh lists after Assign Role
   const handleRoleAssigned = () => {
     fetchPendingUsers();
     fetchActiveUsers();
-    // No need to close the modal here; AssignRole component will handle its own close
+    // No need to close the modal here; AssignRole component handles its own close
+  };
+
+  // Callback to refresh lists after User Rejected
+  const handleUserRejected = () => {
+    fetchPendingUsers(); // User is no longer pending
+    fetchRejectedUsers(); // User is now rejected
+    setOpenRejectUserModal(false); // Ensure modal closes
+  };
+
+  // Callback to refresh lists after Role Revoked
+  const handleRoleRevoked = () => {
+    fetchActiveUsers(); // Role is revoked from active users
+    fetchPendingUsers(); // User might return to pending if no other role
+    setOpenRevokeRoleModal(false); // Ensure modal closes
   };
 
   // Render a generic user table for a given tab's data
@@ -256,6 +287,7 @@ function AdminPanel() {
                             backgroundColor: "rgba(244, 67, 54, 0.04)",
                           },
                         }}
+                        onClick={() => handleRejectUserClick(user)} // Call new handler
                       >
                         Reject
                       </Button>
@@ -271,8 +303,9 @@ function AdminPanel() {
                           backgroundColor: "rgba(33, 150, 243, 0.04)",
                         },
                       }}
+                      onClick={() => handleAssignRoleClick(user)} // Re-evaluate means assigning a role
                     >
-                      Re-evaluate
+                      Re-evaluate (Assign Role)
                     </Button>
                   )}
                   {type === "assigned" && (
@@ -285,6 +318,7 @@ function AdminPanel() {
                           backgroundColor: "rgba(244, 67, 54, 0.04)",
                         },
                       }}
+                      onClick={() => handleRevokeRoleClick(user)} // Call new handler
                     >
                       Revoke Role
                     </Button>
@@ -413,6 +447,22 @@ function AdminPanel() {
         user={selectedUser}
         onClose={() => setOpenAssignRoleModal(false)}
         onRoleAssigned={handleRoleAssigned}
+      />
+
+      {/* RejectUser Component */}
+      <RejectUser
+        open={openRejectUserModal}
+        user={selectedUser}
+        onClose={() => setOpenRejectUserModal(false)}
+        onUserRejected={handleUserRejected}
+      />
+
+      {/* RevokeRole Component */}
+      <RevokeRole
+        open={openRevokeRoleModal}
+        user={selectedUser}
+        onClose={() => setOpenRevokeRoleModal(false)}
+        onRoleRevoked={handleRoleRevoked}
       />
     </ThemeProvider>
   );
