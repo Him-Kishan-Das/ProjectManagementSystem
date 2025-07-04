@@ -13,27 +13,23 @@ import {
   TableHead,
   TableRow,
   Button,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
 } from "@mui/material";
-import { createTheme, ThemeProvider, styled } from "@mui/material/styles";
+import { createTheme, ThemeProvider } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import axiosInstance from "../api/axiosInstance";
-import CustomModal from "../components/CustomModal"; 
+import AssignRole from "../components/AssignRole"; // Import the new component
 
 const simpleAdminTheme = createTheme({
   palette: {
     primary: {
-      main: "#424242", 
+      main: "#424242",
     },
     secondary: {
-      main: "#FFC107", 
+      main: "#FFC107",
     },
     background: {
-      default: "#f0f2f5", 
-      paper: "#ffffff", 
+      default: "#f0f2f5",
+      paper: "#ffffff",
     },
     text: {
       primary: "#212121",
@@ -50,12 +46,12 @@ const simpleAdminTheme = createTheme({
     MuiTab: {
       styleOverrides: {
         root: {
-          textTransform: "none", // Prevent uppercase tabs
+          textTransform: "none",
           fontWeight: 600,
           "&.Mui-selected": {
-            color: "#424242", // Selected tab text color
-            backgroundColor: "#e0e0e0", // Light gray background for selected tab
-            borderRadius: "4px 4px 0 0", // Rounded top corners
+            color: "#424242",
+            backgroundColor: "#e0e0e0",
+            borderRadius: "4px 4px 0 0",
           },
         },
       },
@@ -63,21 +59,21 @@ const simpleAdminTheme = createTheme({
     MuiTabs: {
       styleOverrides: {
         indicator: {
-          display: "none", // Hide the default indicator
+          display: "none",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
         root: {
-          borderRadius: "8px", // Slightly rounded corners for all papers
+          borderRadius: "8px",
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         root: {
-          textTransform: "none", // Prevent uppercase button text
+          textTransform: "none",
           fontWeight: 600,
         },
       },
@@ -86,7 +82,7 @@ const simpleAdminTheme = createTheme({
       styleOverrides: {
         head: {
           fontWeight: 600,
-          backgroundColor: "#f5f5f5", // Light background for table header
+          backgroundColor: "#f5f5f5",
           color: "#424242",
         },
         body: {
@@ -97,7 +93,6 @@ const simpleAdminTheme = createTheme({
   },
 });
 
-// A helper component to render the content for each tab
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
 
@@ -111,8 +106,6 @@ function CustomTabPanel(props) {
     >
       {value === index && (
         <Box sx={{ p: 2 }}>
-          {" "}
-          {/* Reduced padding for table content */}
           {children}
         </Box>
       )}
@@ -128,7 +121,7 @@ function a11yProps(index) {
 }
 
 function AdminPanel() {
-  const [currentTab, setCurrentTab] = useState(0); // 0: Pending, 1: Rejected/Unassigned, 2: Assigned
+  const [currentTab, setCurrentTab] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleTabChange = (event, newValue) => {
@@ -185,10 +178,9 @@ function AdminPanel() {
     }
   };
 
-  // State for the Assign Role dialog, now using CustomModal
+  // State for the Assign Role dialog, now controlled by AdminPanel and passed to AssignRole
   const [openAssignRoleModal, setOpenAssignRoleModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
-  const [selectedRole, setSelectedRole] = useState("");
 
   useEffect(() => {
     if (currentTab === 0) {
@@ -206,47 +198,11 @@ function AdminPanel() {
     setOpenAssignRoleModal(true);
   };
 
-  // Function to handle closing the assign role modal
-  const handleCloseAssignRoleModal = () => {
-    setOpenAssignRoleModal(false);
-    setSelectedUser(null);
-    setSelectedRole(""); // Reset selected role
-  };
-
-  // Function to handle role change in the dropdown
-  const handleRoleChange = (event) => {
-    setSelectedRole(event.target.value);
-  };
-
-  // Function to handle assigning the role
-  const handleAssignRole = async () => {
-    if (!selectedUser || !selectedRole) {
-      console.error("User or role not selected.");
-      return;
-    }
-
-    try {
-      // Assuming you have an API endpoint to update user roles
-      // For demonstration, let's just log the action and simulate success
-      console.log(`Assigning role '${selectedRole}' to user '${selectedUser.name}' (ID: ${selectedUser.id})`);
-      
-      // Replace this with your actual API call:
-      // await axiosInstance.post("/assignUserRole", {
-      //   userId: selectedUser.id,
-      //   role: selectedRole,
-      // });
-
-      // Simulate API success delay
-      await new Promise(resolve => setTimeout(resolve, 500)); 
-
-      // Refresh the relevant user lists after successful assignment
-      fetchPendingUsers();
-      fetchActiveUsers();
-      handleCloseAssignRoleModal(); // Close the modal
-    } catch (error) {
-      console.error("Error assigning role: ", error);
-      // Handle error (e.g., show an error message to the user)
-    }
+  // Callback function to refresh user lists after a role assignment
+  const handleRoleAssigned = () => {
+    fetchPendingUsers();
+    fetchActiveUsers();
+    // No need to close the modal here; AssignRole component will handle its own close
   };
 
   // Render a generic user table for a given tab's data
@@ -255,8 +211,6 @@ function AdminPanel() {
       component={Paper}
       sx={{ mt: 2, border: "1px solid #e0e0e0" }}
     >
-      {" "}
-      {/* Added subtle border */}
       <Table sx={{ minWidth: 650 }} aria-label={`${type} users table`}>
         <TableHead>
           <TableRow>
@@ -289,7 +243,7 @@ function AdminPanel() {
                             backgroundColor: "rgba(76, 175, 80, 0.04)",
                           },
                         }}
-                        onClick={() => handleAssignRoleClick(user)} // Attach click handler
+                        onClick={() => handleAssignRoleClick(user)}
                       >
                         Assign Role
                       </Button>
@@ -366,14 +320,12 @@ function AdminPanel() {
           minHeight: "100vh",
         }}
       >
-        {/* Top Header Admin Role Manager */}
         <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
           <img
             src="https://mui.com/static/images/avatar/1.jpg"
             alt="Logo"
             style={{ height: 40, marginRight: 10, borderRadius: "50%" }}
-          />{" "}
-          {/* Placeholder logo */}
+          />
           <Typography
             variant="h5"
             component="h1"
@@ -386,7 +338,6 @@ function AdminPanel() {
           </Typography>
         </Box>
 
-        {/* Admin Details Section */}
         <Paper elevation={1} sx={{ p: 3, mb: 3 }}>
           <Typography variant="h6" component="h2" gutterBottom>
             Admin: {adminDetails.name}
@@ -399,42 +350,40 @@ function AdminPanel() {
           </Typography>
         </Paper>
 
-        {/* Search Bar */}
         <TextField
           fullWidth
           variant="outlined"
           placeholder="Search users by name or email"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          sx={{ mb: 3, "& fieldset": { borderRadius: "8px" } }} // Match paper border radius
+          sx={{ mb: 3, "& fieldset": { borderRadius: "8px" } }}
         />
 
-        {/* Tabs Section */}
         <Box sx={{ width: "100%", mb: 2 }}>
           <Tabs
             value={currentTab}
             onChange={handleTabChange}
             aria-label="admin roles tabs"
-            TabIndicatorProps={{ style: { display: "none" } }} // Hide default Material-UI indicator
+            TabIndicatorProps={{ style: { display: "none" } }}
             sx={{
               "& .MuiTabs-flexContainer": {
-                justifyContent: "flex-start", // Align tabs to the left
+                justifyContent: "flex-start",
               },
               "& .MuiTab-root": {
-                minHeight: "48px", // Standard tab height
-                padding: "12px 24px", // Adjust padding for a button-like feel
-                marginRight: "8px", // Space between tabs
-                borderRadius: "8px", // Rounded corners for tab buttons
-                backgroundColor: "#e0e0e0", // Background for unselected tabs
+                minHeight: "48px",
+                padding: "12px 24px",
+                marginRight: "8px",
+                borderRadius: "8px",
+                backgroundColor: "#e0e0e0",
                 color: simpleAdminTheme.palette.text.primary,
                 "&.Mui-selected": {
-                  backgroundColor: "#ffffff", // White background for selected tab
-                  boxShadow: "0px 2px 4px rgba(0,0,0,0.1)", // Subtle shadow for selected tab
-                  zIndex: 1, // Bring selected tab to front
-                  color: simpleAdminTheme.palette.primary.main, // Darker text for selected
+                  backgroundColor: "#ffffff",
+                  boxShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                  zIndex: 1,
+                  color: simpleAdminTheme.palette.primary.main,
                 },
                 "&:hover": {
-                  backgroundColor: "#d0d0d0", // Slightly darker hover for unselected
+                  backgroundColor: "#d0d0d0",
                 },
               },
             }}
@@ -445,7 +394,6 @@ function AdminPanel() {
           </Tabs>
         </Box>
 
-        {/* Tab Content Panels */}
         <CustomTabPanel value={currentTab} index={0}>
           {renderUserTable(filterUsers(pendingUsers), "pending")}
         </CustomTabPanel>
@@ -459,35 +407,13 @@ function AdminPanel() {
         </CustomTabPanel>
       </Box>
 
-      {/* CustomModal for Assign Role */}
-      <CustomModal
+      {/* AssignRole Component */}
+      <AssignRole
         open={openAssignRoleModal}
-        onClose={handleCloseAssignRoleModal}
-        title={`Assign Role to ${selectedUser?.name || "User"}`}
-      >
-        <FormControl fullWidth sx={{ mt: 2, mb: 2 }}>
-          <InputLabel id="role-select-label">Select Role</InputLabel>
-          <Select
-            labelId="role-select-label"
-            id="role-select"
-            value={selectedRole}
-            label="Select Role"
-            onChange={handleRoleChange}
-          >
-            <MenuItem value="manager">Manager</MenuItem>
-            <MenuItem value="team_member">Team Member</MenuItem>
-            <MenuItem value="admin">Admin</MenuItem>
-          </Select>
-        </FormControl>
-        <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 1 }}>
-          <Button onClick={handleCloseAssignRoleModal} variant="outlined">
-            Cancel
-          </Button>
-          <Button onClick={handleAssignRole} variant="contained" color="primary">
-            Assign
-          </Button>
-        </Box>
-      </CustomModal>
+        user={selectedUser}
+        onClose={() => setOpenAssignRoleModal(false)}
+        onRoleAssigned={handleRoleAssigned}
+      />
     </ThemeProvider>
   );
 }

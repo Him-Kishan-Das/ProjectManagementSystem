@@ -155,3 +155,34 @@ export const getRejectedUsers = async (req, res) => {
         res.status(404).json({ message: "Rejected Users Data fetching failed", error: error.message });
     }
 }
+
+
+export const assignUserRoles = async (req, res) => {
+    try {
+        const {userId, role} = req.body;
+
+        if(!userId || !role){
+            return res.status(400).json({message: "User Id and role are required"});
+        }
+
+        const allowedRoles = ["manager","member", "admin"];
+        if(!allowedRoles.includes(role)){
+            return res.status(400).json({message: "Invalid role specified."});
+        }
+
+        const user = await Users.findById(userId);
+
+        if(!user){
+            return res.status(404).json({message: "User not found."});
+        }
+
+        user.role = role;
+        user.status = "active";
+        await user.save();
+
+        res.status(200).json({message: "User role assigned successfully.", user});
+    } catch (error) {
+        console.error("Error assigning user role assignment.", error);
+        res.status(500).json({message: "Server error during role assignment.", error: error.message});
+    }
+}
