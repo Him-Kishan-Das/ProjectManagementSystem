@@ -67,7 +67,7 @@ const AssignRole = ({ open, user, onClose, onRoleAssigned }) => {
           onChange={handleRoleChange}
         >
           <MenuItem value="manager">Manager</MenuItem>
-          <MenuItem value="team_member">Team Member</MenuItem>
+          <MenuItem value="member">Team Member</MenuItem>
           <MenuItem value="admin">Admin</MenuItem>
         </Select>
       </FormControl>
