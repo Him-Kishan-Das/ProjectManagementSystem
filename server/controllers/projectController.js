@@ -7,6 +7,7 @@ export const createProject = async (req, res) =>{
             description: req.body.description,
             created_by_user_id: req.body.created_by_user_id,
             member_ids: req.body.member_ids,
+            progress: 'progress',
             created_at: new Date(),
             updated_at: new Date()
         });

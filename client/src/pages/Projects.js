@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react"; // Added useEffect
-import { useLocation } from "react-router-dom"; // Import useLocation hook
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 import {
   Box,
   Typography,
@@ -21,7 +21,7 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import axiosInstance from "../api/axiosInstance";
 
 const Projects = () => {
-  const location = useLocation(); 
+  const location = useLocation();
 
   const [selectedTab, setSelectedTab] = useState(0);
   const [projects, setProjects] = useState([]);
@@ -33,13 +33,11 @@ const Projects = () => {
     setError(null);
 
     let endpoint = '';
-    if (selectedTab === 0){
-      endpoint = '/projects/allProjects';
-    }
-    else if (selectedTab === 1){
+    if (selectedTab === 0) {
+      endpoint = 'projects/allProjects';
+    } else if (selectedTab === 1) {
       endpoint = '/projects/inProgressProjects';
-    }
-    else if(selectedTab === 2){
+    } else if (selectedTab === 2) {
       endpoint = '/projects/completedProjects';
     }
 
@@ -48,6 +46,7 @@ const Projects = () => {
       setProjects(response.data);
     } catch (error) {
       console.error("Error fetching projects:", error);
+      // It's good practice to ensure projects is an empty array on error
       setError("Failed to load projects. Please try again.");
       setProjects([]);
     } finally {
@@ -148,21 +147,23 @@ const Projects = () => {
                   {project.description}
                 </Typography>
 
-                Details List
+                {/* Details List */}
                 <List dense sx={{ p: 0, mb: 1, flexShrink: 0 }}>
                   <ListItem disablePadding>
                     <ListItemIcon sx={{ minWidth: 35 }}>
                       <GroupIcon fontSize="small" />
                     </ListItemIcon>
+                    {/* Safely access project.members.length */}
                     <ListItemText
-                      primary={`Members: ${project.members.length}`}
+                      primary={`Members: ${project.members ? project.members.length : 0}`}
                     />
                   </ListItem>
                   <ListItem disablePadding>
                     <ListItemIcon sx={{ minWidth: 35 }}>
                       <PersonIcon fontSize="small" />
                     </ListItemIcon>
-                    <ListItemText primary={`Lead: ${project.lead.name}`} />
+                    {/* Add a check for project.lead as well, if it can be undefined */}
+                    <ListItemText primary={`Lead: ${project.lead ? project.lead.name : 'N/A'}`} />
                   </ListItem>
                   <ListItem disablePadding>
                     <ListItemIcon sx={{ minWidth: 35 }}>
@@ -191,9 +192,10 @@ const Projects = () => {
                   >
                     Team:
                   </Typography>
-                  {project.members.map((member) => (
+                  {/* Conditionally render members avatars only if project.members is an array */}
+                  {project.members && project.members.map((member) => (
                     <Avatar
-                      key={member.id}
+                      key={member.id} // Ensure member.id exists or use index if no unique ID
                       alt={member.name}
                       src={member.avatar}
                       sx={{ width: 24, height: 24, fontSize: "0.75rem" }}

@@ -5,6 +5,7 @@ const projectSchema = new mongoose.Schema({
     description: {type: String, required: true},
     created_by_user_id: {type: String, required: true},
     member_ids: {type: Array, required: true},
+    progress: {type: String, required: true},
     created_at: {type: Date, required: true},
     updated_at: {type: Date, required: true}
 })
