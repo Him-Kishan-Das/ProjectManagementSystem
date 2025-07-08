@@ -248,7 +248,7 @@ export const revokeUserRole = async (req, res) => {
   }
 };
 
-export const getMembers = async (req, res) => {
+export const getAllMembers = async (req, res) => {
   try {
     const teamMembers = await Users.find({ role: "member" });
     res.status(200).json(teamMembers);
@@ -260,3 +260,22 @@ export const getMembers = async (req, res) => {
     });
   }
 };
+
+
+export const getUserById =  async (userIds) => {
+  try {
+    if(!userIds || userIds.length === 0){
+      return [];
+    }
+
+    const users = await Users.find({ _id: { $in: userIds } });
+
+    return users.map(user => user.toObject());
+  } catch (error) {
+    console.error("Error in getUserssByIds (userController): ", error);
+    throw new Error("Failed to retrieve user detalis.");
+  }
+}
+
+
+

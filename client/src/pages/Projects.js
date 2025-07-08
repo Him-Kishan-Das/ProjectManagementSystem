@@ -13,11 +13,16 @@ import {
   ListItem,
   ListItemIcon,
   ListItemText,
+  CircularProgress,
+  Button, // Import Button component
 } from "@mui/material";
 import WorkIcon from "@mui/icons-material/Work";
 import GroupIcon from "@mui/icons-material/Group";
 import PersonIcon from "@mui/icons-material/Person";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
+import EditIcon from "@mui/icons-material/Edit"; // Import an icon for editing
+// Or GroupAddIcon if you want a more specific "assign members" icon
+// import GroupAddIcon from "@mui/icons-material/GroupAdd";
 import axiosInstance from "../api/axiosInstance";
 
 const Projects = () => {
@@ -34,7 +39,7 @@ const Projects = () => {
 
     let endpoint = '';
     if (selectedTab === 0) {
-      endpoint = 'projects/allProjects';
+      endpoint = '/projects/allProjects';
     } else if (selectedTab === 1) {
       endpoint = '/projects/inProgressProjects';
     } else if (selectedTab === 2) {
@@ -46,7 +51,6 @@ const Projects = () => {
       setProjects(response.data);
     } catch (error) {
       console.error("Error fetching projects:", error);
-      // It's good practice to ensure projects is an empty array on error
       setError("Failed to load projects. Please try again.");
       setProjects([]);
     } finally {
@@ -56,17 +60,28 @@ const Projects = () => {
 
   useEffect(() => {
     fetchProjects();
-  }, [selectedTab]); // Call fetchProjects whenever selectedTab changes
+  }, [selectedTab]);
 
   const handleChangeTab = (event, newValue) => {
     setSelectedTab(newValue);
   };
 
-  // Render logic based on loading, error, and projects
+  // New handler for the Edit/Assign Members button
+  const handleEditAssignMembers = (projectId) => {
+    console.log(`Edit/Assign Members for Project ID: ${projectId}`);
+    // In a real application, you would:
+    // 1. Open a dialog/modal for editing members for this projectId
+    // 2. Navigate to a dedicated project edit page:
+    //    e.g., navigate(`/projects/${projectId}/edit-members`);
+    // 3. Dispatch an action to a global state management system
+  };
+
+  // --- Render Logic ---
   if (loading) {
     return (
-      <Box sx={{ p: 3, maxWidth: 1200, margin: "auto" }}>
-        <Typography variant="h6" sx={{ textAlign: "center", mt: 4 }}>
+      <Box sx={{ p: 3, maxWidth: 1200, margin: "auto", display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>
           Loading projects...
         </Typography>
       </Box>
@@ -75,8 +90,8 @@ const Projects = () => {
 
   if (error) {
     return (
-      <Box sx={{ p: 3, maxWidth: 1200, margin: "auto" }}>
-        <Typography variant="h6" color="error" sx={{ textAlign: "center", mt: 4 }}>
+      <Box sx={{ p: 3, maxWidth: 1200, margin: "auto", textAlign: "center", mt: 4 }}>
+        <Typography variant="h6" color="error">
           {error}
         </Typography>
       </Box>
@@ -104,29 +119,33 @@ const Projects = () => {
         </Tabs>
       </Paper>
 
-      <Grid container spacing={4} alignItems="stretch">
+      <Grid container spacing={4} direction="column">
         {projects.length > 0 ? (
           projects.map((project) => (
-            <Grid item xs={12} sm={6} md={6} key={project.id} sx={{ pb: 4 }}>
+            <Grid
+              item
+              xs={12}
+              key={project.id}
+            >
               <Paper
                 elevation={2}
                 sx={{
                   p: 3,
-                  height: "100%",
                   display: "flex",
                   flexDirection: "column",
                   borderRadius: 2,
                   border: "1px solid #ddd",
-                  marginBottom: 2,
+                  minHeight: '180px',
                 }}
               >
+                {/* Project Header (Name + Status Chip) */}
                 <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                   <WorkIcon color="primary" sx={{ mr: 1 }} />
                   <Typography variant="h6" component="h3" sx={{ flexGrow: 1 }}>
                     {project.name}
                   </Typography>
                   <Chip
-                    label={project.status}
+                    label={project.status || 'Unknown'}
                     color={
                       project.status === "In Progress" ? "info" : "success"
                     }
@@ -134,17 +153,17 @@ const Projects = () => {
                   />
                 </Box>
 
+                {/* Project Description */}
                 <Typography
                   variant="body2"
                   color="text.secondary"
                   sx={{
                     mb: 2,
-                    flexGrow: 1,
                     maxHeight: "80px",
                     overflowY: "auto",
                   }}
                 >
-                  {project.description}
+                  {project.description || 'No description provided.'}
                 </Typography>
 
                 {/* Details List */}
@@ -153,7 +172,6 @@ const Projects = () => {
                     <ListItemIcon sx={{ minWidth: 35 }}>
                       <GroupIcon fontSize="small" />
                     </ListItemIcon>
-                    {/* Safely access project.members.length */}
                     <ListItemText
                       primary={`Members: ${project.members ? project.members.length : 0}`}
                     />
@@ -162,7 +180,6 @@ const Projects = () => {
                     <ListItemIcon sx={{ minWidth: 35 }}>
                       <PersonIcon fontSize="small" />
                     </ListItemIcon>
-                    {/* Add a check for project.lead as well, if it can be undefined */}
                     <ListItemText primary={`Lead: ${project.lead ? project.lead.name : 'N/A'}`} />
                   </ListItem>
                   <ListItem disablePadding>
@@ -170,7 +187,7 @@ const Projects = () => {
                       <CalendarTodayIcon fontSize="small" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={`Created: ${project.createdAt}`}
+                      primary={`Created: ${project.createdAt || 'N/A'}`}
                     />
                   </ListItem>
                 </List>
@@ -183,6 +200,7 @@ const Projects = () => {
                     flexWrap: "wrap",
                     gap: 0.5,
                     flexShrink: 0,
+                    alignItems: "center",
                   }}
                 >
                   <Typography
@@ -192,16 +210,33 @@ const Projects = () => {
                   >
                     Team:
                   </Typography>
-                  {/* Conditionally render members avatars only if project.members is an array */}
-                  {project.members && project.members.map((member) => (
-                    <Avatar
-                      key={member.id} // Ensure member.id exists or use index if no unique ID
-                      alt={member.name}
-                      src={member.avatar}
-                      sx={{ width: 24, height: 24, fontSize: "0.75rem" }}
-                      title={member.name}
-                    />
-                  ))}
+                  {project.members && project.members.length > 0 ? (
+                    project.members.map((member, index) => (
+                      <Avatar
+                        key={member.id || index}
+                        alt={member.name || 'Member'}
+                        src={member.avatar || ''}
+                        sx={{ width: 24, height: 24, fontSize: "0.75rem" }}
+                        title={member.name || 'Member'}
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="caption" color="text.secondary">
+                      No team members
+                    </Typography>
+                  )}
+                </Box>
+
+                {/* Edit/Assign Members Button */}
+                <Box sx={{ mt: 3, display: 'flex', justifyContent: 'flex-end' }}>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={<EditIcon />} // Or GroupAddIcon
+                    onClick={() => handleEditAssignMembers(project.id)}
+                  >
+                    Edit/Assign Members
+                  </Button>
                 </Box>
               </Paper>
             </Grid>
