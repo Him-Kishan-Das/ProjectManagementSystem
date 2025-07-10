@@ -23,7 +23,7 @@ function App() {
           path="*"
           element={
             <PrivateRoute>
-              <div style={{ display: 'flex' }}>
+              <div style={{ display: 'flex' }}>           
                 <Sidebar drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen} />
 
                 <div
