@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
 import {
   Box,
   Typography,
@@ -51,6 +51,7 @@ const getInitials = (name) => {
 
 const Projects = () => {
   const location = useLocation();
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const [selectedTab, setSelectedTab] = useState(0);
   const [projects, setProjects] = useState([]);
@@ -167,6 +168,11 @@ const Projects = () => {
     setMembersError(null);
   };
 
+  // New handler for clicking project card
+  const handleProjectCardClick = (projectId) => {
+    navigate(`/project-detail?projectid=${projectId}`);
+  };
+
   // --- Render Logic ---
   if (loading) {
     return (
@@ -244,7 +250,9 @@ const Projects = () => {
                     borderRadius: 2,
                     border: "1px solid #ddd",
                     minHeight: "180px",
+                    cursor: "pointer", // Add cursor pointer to indicate clickability
                   }}
+                  onClick={() => handleProjectCardClick(project._id)} // Add onClick handler
                 >
                   {/* Project Header (Name + Status Chip) */}
                   <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
@@ -355,7 +363,7 @@ const Projects = () => {
                     )}
                   </Box>
 
-                  {/* Edit/Assign Members Button */}
+                  {/* Edit/Assign Members Button - **Crucially, prevent event propagation for this button** */}
                   <Box
                     sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}
                   >
@@ -363,7 +371,10 @@ const Projects = () => {
                       variant="outlined"
                       size="small"
                       startIcon={<EditIcon />}
-                      onClick={() => handleEditAssignMembers(project._id)}
+                      onClick={(e) => {
+                        e.stopPropagation(); // Stop the event from bubbling up to the Paper
+                        handleEditAssignMembers(project._id);
+                      }}
                     >
                       Edit/Assign Members
                     </Button>
