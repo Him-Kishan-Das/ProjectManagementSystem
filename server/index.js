@@ -6,6 +6,7 @@ import dotenv from 'dotenv';
 
 import projectsRoutes from './routes/projectsRoutes.js'; 
 import userRoutes from './routes/userRoutes.js';
+import tasksRoutes from './routes/tasksRoutes.js';
 
 
 import authMiddleware from './middleware/authMiddleware.js';
@@ -22,6 +23,7 @@ app.get("/", (req, res) => {
 
 app.use(authMiddleware);
 app.use('/api/projects', projectsRoutes);
+app.use('/api', tasksRoutes);
 
 mongoose.connect(process.env.MONGO_URI)
   .then(() => app.listen(process.env.PORT || 5000, () =>
