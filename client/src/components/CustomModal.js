@@ -12,10 +12,12 @@ const CustomModal = ({ open, onClose, title, children }) => {
     borderRadius: 2,
     boxShadow: 24,
     p: 4,
+    maxHeight: '90vh', // Sets a maximum height (e.g., 90% of viewport height)
+    overflowY: 'auto', // Enables vertical scrolling when content exceeds maxHeight
   };
 
   return (
-    <Modal 
+    <Modal
       open={open}
       onClose={onClose}
       aria-labelledby="modal-modal-title"
@@ -25,9 +27,10 @@ const CustomModal = ({ open, onClose, title, children }) => {
         <Typography id="modal-modal-title" variant="h6" component="h2">
           {title}
         </Typography>
-        <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+        {/* The children are wrapped in a Box with mt: 2, which is fine */}
+        <Box id="modal-modal-description" sx={{ mt: 2 }}>
           {children}
-        </Typography>
+        </Box>
       </Box>
     </Modal>
   );
