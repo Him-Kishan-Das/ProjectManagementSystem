@@ -40,7 +40,7 @@ function App() {
                     <Route path="/projects" element={<Projects />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path='/admin-panel' element={<Admin />} />
-                    <Route path="/project-detail" element={<ProjectDetail />} />
+                    <Route path="/project-detail/:projectId" element={<ProjectDetail />} />
                   </Routes>
                 </div>
               </div>

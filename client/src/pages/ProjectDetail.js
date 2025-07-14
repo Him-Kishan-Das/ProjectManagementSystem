@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container, Paper, Typography, Grid, Avatar, Chip, Button,
   Table, TableBody, TableCell, TableContainer, TableHead,
   TableRow, IconButton, List, ListItem, ListItemAvatar,
   ListItemText, Divider, Box, Select, MenuItem, FormControl,
-  InputLabel, Stack, useMediaQuery, useTheme
+  InputLabel, Stack, useMediaQuery, useTheme, CircularProgress
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -12,6 +12,8 @@ import {
   Delete as DeleteIcon,
   CheckCircle as CheckCircleIcon
 } from '@mui/icons-material';
+import { useParams } from 'react-router-dom';
+import axiosInstance from '../api/axiosInstance'; // Import axiosInstance
 
 import CustomModal from '../components/CustomModal';
 import AddTaskModalContent from '../components/AddTaskModalContent';
@@ -20,36 +22,75 @@ const ProjectDetail = () => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
   const [taskFilter, setTaskFilter] = useState('all');
+  const { projectId } = useParams();
+  console.log("ProjectDetail - Current Project ID:", projectId);
+
+  // State for fetched project details and members
+  const [project, setProject] = useState(null);
+  const [projectMembers, setProjectMembers] = useState([]); // This will hold the actual members from the API
+  const [loadingProject, setLoadingProject] = useState(true);
+  const [errorProject, setErrorProject] = useState(null);
 
   // Renamed from 'tasks' to 'allTasks' to avoid confusion with filteredTasks
   // and to hold all project tasks including newly added ones.
-  const [allTasks, setAllTasks] = useState([
-    { id: 1, name: 'Conduct Market Research', assignedTo: 'Jane Smith', dueDate: '2024-08-01', status: 'To Do' },
-    { id: 2, name: 'Develop UI/UX Wireframes', assignedTo: 'Emily White', dueDate: '2024-07-20', status: 'In Progress' },
-    { id: 3, name: 'Set Up Development Environment', assignedTo: 'John Doe', dueDate: '2024-06-30', status: 'Completed' },
-    { id: 4, name: 'Implement User Authentication', assignedTo: 'Peter Jones', dueDate: '2024-08-15', status: 'In Progress' },
-  ]);
+  // Initialize with an empty array, as tasks will be fetched or added dynamically.
+  const [allTasks, setAllTasks] = useState([]);
 
-  const project = {
-    name: 'Sample Project Alpha',
-    description: 'This is a detailed description for a sample project. It outlines the project\'s goals, scope, and expected outcomes.',
-    lead: 'Alice Johnson',
-    created: '2023-01-15',
-    dueDate: '2024-12-31',
-  };
+  // Fetch project details and members on component mount or projectId change
+  useEffect(() => {
+    const fetchProjectDetails = async () => {
+      try {
+        setLoadingProject(true);
+        setErrorProject(null);
+        const response = await axiosInstance.get(`/projects/projectMembers?project_id=${projectId}`); // Use the same endpoint
 
-  const members = [
-    { id: 1, name: 'John Doe', email: 'john@example.com' },
-    { id: 2, name: 'Jane Smith', email: 'jane@example.com' },
-    { id: 3, name: 'Peter Jones', email: 'peter@example.com' },
-    { id: 4, name: 'Emily White', email: 'emily@example.com' },
-    { id: 5, name: 'Michael Brown', email: 'michael@example.com' },
-  ];
+        if (response.data && response.data.project) {
+          setProject(response.data.project); // Set the project details
+          if (Array.isArray(response.data.project.members_details)) {
+            // Map _id to id for consistency if needed, or use _id directly
+            const membersData = response.data.project.members_details.map(member => ({
+              id: member._id,
+              name: member.name,
+              email: member.email, // Include email if available
+              role: member.role // Include role if available
+            }));
+            setProjectMembers(membersData); // Set the project members
+          } else {
+            console.warn("Project members_details is not an array or missing.");
+            setProjectMembers([]); // Ensure it's an empty array if not found
+          }
+          // You might also fetch initial tasks for this project here if your backend supports it
+          // For now, tasks are handled by AddTaskModalContent and local state.
+        } else {
+          throw new Error("Unexpected response structure for project details.");
+        }
+      } catch (error) {
+        console.error("Error fetching project details:", error);
+        if (error.response) {
+          setErrorProject(`Failed to load project details: ${error.response.status} - ${error.response.data.message || JSON.stringify(error.response.data) || 'Server error'}`);
+        } else if (error.request) {
+          setErrorProject("Failed to load project details: No response from server. Check network or backend.");
+        } else {
+          setErrorProject(`Failed to load project details: ${error.message}`);
+        }
+      } finally {
+        setLoadingProject(false);
+      }
+    };
+
+    if (projectId) {
+      fetchProjectDetails();
+    }
+  }, [projectId]); // Re-run effect if projectId changes
 
   // Filter tasks based on the selected status
   const filteredTasks = taskFilter === 'all' ? allTasks : allTasks.filter(t => t.status === taskFilter);
 
-  const getInitials = (name) => name.split(' ').map(n => n[0]).join('');
+  const getInitials = (name) => {
+    if (!name || typeof name !== 'string') return ''; // Defensive check
+    return name.split(' ').map(n => n[0]).join('').toUpperCase();
+  };
+
   const getStatusColor = (status) => {
     switch (status) {
       case 'To Do': return 'primary';
@@ -58,7 +99,9 @@ const ProjectDetail = () => {
       default: return 'default';
     }
   };
-  const getRandomColor = (name) => {
+
+  // Make getRandomColor more robust
+  const getRandomColor = (inputName) => {
     const colors = [
       theme.palette.primary.main,
       theme.palette.secondary.main,
@@ -66,7 +109,16 @@ const ProjectDetail = () => {
       theme.palette.error.main,
       theme.palette.warning.main,
     ];
+    // Ensure inputName is a string before accessing length
+    const name = typeof inputName === 'string' ? inputName : '';
+    if (colors.length === 0) return '#CCCCCC'; // Fallback if no colors defined
     return colors[name.length % colors.length];
+  };
+
+  // Helper to find member name by ID
+  const getMemberNameById = (memberId) => {
+    const member = projectMembers.find(m => m.id === memberId);
+    return member ? member.name : 'Unknown Member';
   };
 
   // State to control the visibility of the Add Task modal
@@ -84,15 +136,46 @@ const ProjectDetail = () => {
 
   // Function to handle adding new tasks from the modal
   const handleAddTasks = (newTasks) => {
-    // Generate unique IDs for the new tasks. In a real application,
-    // these IDs would typically come from a backend or a more robust ID generation strategy.
-    const tasksWithIds = newTasks.map((task, index) => ({
+    // In a real app, you would likely refetch tasks from the backend
+    // after successful submission, or add them to local state if the
+    // backend response provides the full new task objects with IDs.
+    // For now, we'll just add them to the local state.
+    const tasksWithLocalIds = newTasks.map((task, index) => ({
       ...task,
-      id: allTasks.length + index + 1, // Simple ID generation
+      // Use a more robust temporary ID if not getting from backend immediately
+      id: `temp-${Date.now()}-${index}`,
+      // Replace assignedTo ID with name for display if needed in this component's task list
+      assignedTo: getMemberNameById(task.assigned_to_user_id) // Convert ID back to name for display
     }));
-    setAllTasks((prevTasks) => [...prevTasks, ...tasksWithIds]);
+    setAllTasks((prevTasks) => [...prevTasks, ...tasksWithLocalIds]);
     handleCloseAddTaskModal(); // Close the modal after tasks are added
   };
+
+  // Render loading or error states for project details
+  if (loadingProject) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 3, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '50vh' }}>
+        <CircularProgress />
+        <Typography sx={{ ml: 2 }}>Loading project details...</Typography>
+      </Container>
+    );
+  }
+
+  if (errorProject) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Typography color="error">{errorProject}</Typography>
+      </Container>
+    );
+  }
+
+  if (!project) {
+    return (
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        <Typography>Project not found or data is empty.</Typography>
+      </Container>
+    );
+  }
 
   return (
     <Container maxWidth="xl" sx={{ py: 3 }}>
@@ -115,13 +198,13 @@ const ProjectDetail = () => {
             </Typography>
             <List dense>
               <ListItem disableGutters>
-                <ListItemText primary="Lead:" secondary={project.lead} />
+                <ListItemText primary="Lead:" secondary={project.lead || 'N/A'} />
               </ListItem>
               <ListItem disableGutters>
-                <ListItemText primary="Created:" secondary={project.created} />
+                <ListItemText primary="Created:" secondary={project.created_at ? new Date(project.created_at).toLocaleDateString() : 'N/A'} />
               </ListItem>
               <ListItem disableGutters>
-                <ListItemText primary="Due Date:" secondary={project.dueDate} />
+                <ListItemText primary="Due Date:" secondary={project.dueDate || 'N/A'} /> {/* Assuming project.dueDate exists or adjust */}
               </ListItem>
             </List>
           </Paper>
@@ -132,31 +215,35 @@ const ProjectDetail = () => {
           <Paper sx={{ p: 2, borderRadius: 2, height: '100%' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
               <Typography variant="subtitle1" fontWeight="bold">
-                Project Members ({members.length})
+                Project Members ({projectMembers.length})
               </Typography>
               <Button size="small" startIcon={<AddIcon />} sx={{ minWidth: 'auto', p: 0 }}>
                 Add
               </Button>
             </Box>
             <List dense>
-              {members.map((member) => (
-                <ListItem key={member.id} disableGutters sx={{ mb: 1 }}>
-                  <ListItemAvatar>
-                    <Avatar sx={{
-                      width: 28, height: 28, fontSize: '0.8rem',
-                      bgcolor: getRandomColor(member.name)
-                    }}>
-                      {getInitials(member.name)}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText
-                    primary={member.name}
-                    secondary={member.email}
-                    primaryTypographyProps={{ fontSize: '0.9rem' }}
-                    secondaryTypographyProps={{ fontSize: '0.75rem' }}
-                  />
-                </ListItem>
-              ))}
+              {projectMembers.length > 0 ? (
+                projectMembers.map((member) => (
+                  <ListItem key={member.id} disableGutters sx={{ mb: 1 }}>
+                    <ListItemAvatar>
+                      <Avatar sx={{
+                        width: 28, height: 28, fontSize: '0.8rem',
+                        bgcolor: getRandomColor(member.name) // Pass member.name
+                      }}>
+                        {getInitials(member.name)}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText
+                      primary={member.name}
+                      secondary={member.email}
+                      primaryTypographyProps={{ fontSize: '0.9rem' }}
+                      secondaryTypographyProps={{ fontSize: '0.75rem' }}
+                    />
+                  </ListItem>
+                ))
+              ) : (
+                <ListItem><ListItemText secondary="No members found for this project." /></ListItem>
+              )}
             </List>
           </Paper>
         </Grid>
@@ -170,7 +257,7 @@ const ProjectDetail = () => {
             <Grid container spacing={1}>
               <Grid item xs={4}>
                 <Paper sx={{ p: 1, textAlign: 'center', borderRadius: 1 }}>
-                  <Typography variant="h6">{allTasks.length}</Typography> {/* Use allTasks for total count */}
+                  <Typography variant="h6">{allTasks.length}</Typography>
                   <Typography variant="caption">Total</Typography>
                 </Paper>
               </Grid>
@@ -195,7 +282,6 @@ const ProjectDetail = () => {
         </Grid>
       </Grid>
 
-
       {/* Task Table */}
       <Paper elevation={2} sx={{ mt: 4, p: 2, borderRadius: 2 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
@@ -218,7 +304,7 @@ const ProjectDetail = () => {
               variant="contained"
               size="small"
               startIcon={<AddIcon />}
-              onClick={handleOpenAddTaskModal} // Call handler to open the modal
+              onClick={handleOpenAddTaskModal}
             >
               Create Task
             </Button>
@@ -237,42 +323,48 @@ const ProjectDetail = () => {
               </TableRow>
             </TableHead>
             <TableBody>
-              {filteredTasks.map((task) => (
-                <TableRow key={task.id}>
-                  <TableCell>{task.name}</TableCell>
-                  <TableCell>
-                    <Stack direction="row" alignItems="center" spacing={1}>
-                      <Avatar
-                        sx={{
-                          width: 24, height: 24,
-                          fontSize: '0.7rem',
-                          bgcolor: getRandomColor(task.assignedTo)
-                        }}
-                      >
-                        {getInitials(task.assignedTo)}
-                      </Avatar>
-                      <span>{task.assignedTo}</span>
-                    </Stack>
-                  </TableCell>
-                  <TableCell>{task.dueDate}</TableCell>
-                  <TableCell>
-                    <Chip
-                      label={task.status}
-                      size="small"
-                      color={getStatusColor(task.status)}
-                    />
-                  </TableCell>
-                  <TableCell align="right">
-                    <IconButton size="small"><EditIcon fontSize="small" /></IconButton>
-                    <IconButton size="small"><DeleteIcon fontSize="small" /></IconButton>
-                    {task.status !== 'Completed' && (
-                      <IconButton size="small" color="success">
-                        <CheckCircleIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </TableCell>
+              {filteredTasks.length > 0 ? (
+                filteredTasks.map((task) => (
+                  <TableRow key={task.id}>
+                    <TableCell>{task.name}</TableCell>
+                    <TableCell>
+                      <Stack direction="row" alignItems="center" spacing={1}>
+                        <Avatar
+                          sx={{
+                            width: 24, height: 24,
+                            fontSize: '0.7rem',
+                            bgcolor: getRandomColor(task.assignedTo) // Pass task.assignedTo (which is now name)
+                          }}
+                        >
+                          {getInitials(task.assignedTo)}
+                        </Avatar>
+                        <span>{task.assignedTo}</span>
+                      </Stack>
+                    </TableCell>
+                    <TableCell>{task.dueDate}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={task.status}
+                        size="small"
+                        color={getStatusColor(task.status)}
+                      />
+                    </TableCell>
+                    <TableCell align="right">
+                      <IconButton size="small"><EditIcon fontSize="small" /></IconButton>
+                      <IconButton size="small"><DeleteIcon fontSize="small" /></IconButton>
+                      {task.status !== 'Completed' && (
+                        <IconButton size="small" color="success">
+                          <CheckCircleIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell colSpan={5} align="center">No tasks found for this project.</TableCell>
                 </TableRow>
-              ))}
+              )}
             </TableBody>
           </Table>
         </TableContainer>
@@ -284,7 +376,8 @@ const ProjectDetail = () => {
         onClose={handleCloseAddTaskModal}
         title="Add New Tasks"
       >
-        <AddTaskModalContent members={members} onAddTask={handleAddTasks} />
+        {/* Pass projectMembers to AddTaskModalContent for the dropdown */}
+        <AddTaskModalContent onAddTask={handleAddTasks} />
       </CustomModal>
     </Container>
   );

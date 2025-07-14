@@ -170,7 +170,7 @@ const Projects = () => {
 
   // New handler for clicking project card
   const handleProjectCardClick = (projectId) => {
-    navigate(`/project-detail?projectid=${projectId}`);
+    navigate(`/project-detail/${projectId}`);
   };
 
   // --- Render Logic ---
