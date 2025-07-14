@@ -14,22 +14,23 @@ import {
 } from '@mui/material';
 import { Add as AddIcon, Delete as DeleteIcon } from '@mui/icons-material';
 import { useParams } from 'react-router-dom';
-import axiosInstance from '../api/axiosInstance'; // Assuming this is correctly configured
+import axiosInstance from '../api/axiosInstance';
 
-const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
+const AddTaskModalContent = ({ onAddTask }) => {
   const { projectId } = useParams();
   console.log("Current Project ID:", projectId);
 
   const [tasks, setTasks] = useState([
-    { name: '', description: '', assignedTo: '', dueDate: '', status: 'To Do' },
+    // Removed 'status' from initial state as it's now handled by backend
+    { name: '', description: '', assignedTo: '', dueDate: '' },
   ]);
   const [projectMembers, setProjectMembers] = useState([]);
   const [loadingMembers, setLoadingMembers] = useState(true);
   const [errorMembers, setErrorMembers] = useState(null);
   const [submittingTasks, setSubmittingTasks] = useState(false);
   const [submissionError, setSubmissionError] = useState(null);
-  const [currentUserId, setCurrentUserId] = useState(null); // State to store user ID from localStorage
-  const [loadingUserId, setLoadingUserId] = useState(true); // State to track user ID loading
+  const [currentUserId, setCurrentUserId] = useState(null);
+  const [loadingUserId, setLoadingUserId] = useState(true);
 
   // Effect to load user ID from localStorage on component mount
   useEffect(() => {
@@ -51,11 +52,10 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
       }
     } catch (error) {
       console.error("Failed to parse user data from localStorage:", error);
-      // Optionally set an error state if user ID is critical for component functionality
     } finally {
-      setLoadingUserId(false); // Finished attempting to load user ID
+      setLoadingUserId(false);
     }
-  }, []); // Empty dependency array means this runs once on mount
+  }, []);
 
   // Fetch project members when the component mounts or projectId changes
   useEffect(() => {
@@ -67,7 +67,7 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
 
         if (response.data && response.data.project && Array.isArray(response.data.project.members_details)) {
           const members = response.data.project.members_details.map(member => ({
-            id: member._id, // Backend uses _id, map to id for consistency in frontend state
+            id: member._id,
             name: member.name
           }));
           setProjectMembers(members);
@@ -101,7 +101,8 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
   };
 
   const handleAddTaskField = () => {
-    setTasks([...tasks, { name: '', description: '', assignedTo: '', dueDate: '', status: 'To Do' }]);
+    // Removed 'status' from new task field as it's handled by backend
+    setTasks([...tasks, { name: '', description: '', assignedTo: '', dueDate: '' }]);
   };
 
   const handleRemoveTaskField = (index) => {
@@ -113,7 +114,6 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
     setSubmittingTasks(true);
     setSubmissionError(null);
 
-    // Ensure currentUserId is available before proceeding
     if (loadingUserId) {
       setSubmissionError("Please wait, user authentication is still loading.");
       setSubmittingTasks(false);
@@ -125,7 +125,6 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
       return;
     }
 
-    // Basic validation for required fields
     const isValid = tasks.every(task => task.name && task.assignedTo && task.dueDate);
     if (!isValid) {
       setSubmissionError("Please fill in all required fields (Task Name, Assigned To, Due Date) for all tasks.");
@@ -133,22 +132,21 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
       return;
     }
 
-    // Transform tasks to the backend expected format
     const tasksToSubmit = tasks.map(task => ({
       project_id: projectId,
       name: task.name,
       description: task.description,
-      status: task.status,
-      assigned_to_user_id: task.assignedTo, // This is the member.id (which is _id from backend)
-      created_by_user_id: currentUserId, // Use the actual currentUserId from localStorage
-      due_date: task.dueDate, // Date is sent as 'YYYY-MM-DD' string, which is generally fine
+      assigned_to_user_id: task.assignedTo,
+      created_by_user_id: currentUserId,
+      due_date: task.dueDate,
+      // Status is no longer sent from frontend, backend will set it to 'To Do'
     }));
 
     try {
-      const response = await axiosInstance.post('/assigntasks', tasksToSubmit);
+      const response = await axiosInstance.post('/assigntasks', tasksToSubmit); // Corrected path
       console.log('Tasks submitted successfully:', response.data);
-      onAddTask(tasksToSubmit); // Notify parent component (e.g., to close modal, refresh list)
-      setTasks([{ name: '', description: '', assignedTo: '', dueDate: '', status: 'To Do' }]); // Reset form
+      onAddTask(response.data.tasks); // Pass the tasks returned by the backend (which include status)
+      setTasks([{ name: '', description: '', assignedTo: '', dueDate: '' }]); // Reset form
     } catch (error) {
       console.error("Error submitting tasks:", error);
       if (error.response) {
@@ -163,7 +161,6 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
     }
   };
 
-  // Render a loading state if user ID is still being fetched
   if (loadingUserId) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
@@ -182,7 +179,6 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
       {loadingMembers && <Typography>Loading project members...</Typography>}
       {errorMembers && <Typography color="error">{errorMembers}</Typography>}
 
-      {/* Render the form only if members are loaded and no errors, and user ID is available */}
       {!loadingMembers && !errorMembers && currentUserId && tasks.map((task, index) => (
         <Stack key={index} direction="column" spacing={2} sx={{ mb: 3, p: 2, border: '1px solid #e0e0e0', borderRadius: 1 }}>
           <TextField
@@ -244,18 +240,7 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
             error={!task.dueDate && !submittingTasks && submissionError !== null}
             helperText={!task.dueDate && !submittingTasks && submissionError !== null ? "Due Date is required" : ""}
           />
-          <FormControl fullWidth size="small">
-            <InputLabel>Status</InputLabel>
-            <Select
-              value={task.status}
-              label="Status"
-              onChange={(e) => handleTaskChange(index, 'status', e.target.value)}
-            >
-              <MenuItem value="To Do">To Do</MenuItem>
-              <MenuItem value="In Progress">In Progress</MenuItem>
-              <MenuItem value="Completed">Completed</MenuItem>
-            </Select>
-          </FormControl>
+          {/* Removed Status FormControl - Status is now automatically "To Do" */}
           {tasks.length > 1 && (
             <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
               <IconButton color="error" onClick={() => handleRemoveTaskField(index)}>
@@ -271,7 +256,7 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
         variant="outlined"
         fullWidth
         sx={{ mb: 2 }}
-        disabled={submittingTasks || !currentUserId} // Disable if no user ID or submitting
+        disabled={submittingTasks || !currentUserId}
       >
         Add Another Task
       </Button>
@@ -280,7 +265,7 @@ const AddTaskModalContent = ({ onAddTask }) => { // Removed currentUserId prop
         variant="contained"
         onClick={handleSubmit}
         fullWidth
-        disabled={submittingTasks || !currentUserId} // Disable if no user ID or submitting
+        disabled={submittingTasks || !currentUserId}
         startIcon={submittingTasks ? <CircularProgress size={20} color="inherit" /> : null}
       >
         {submittingTasks ? 'Adding Tasks...' : 'Add Tasks'}
