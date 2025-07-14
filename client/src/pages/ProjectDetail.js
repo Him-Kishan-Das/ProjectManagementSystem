@@ -83,6 +83,31 @@ const ProjectDetail = () => {
     }
   }, [projectId]); // Re-run effect if projectId changes
 
+
+  const [loadingTasks, setLoadingTasks] = useState(true);
+  const [errorTasks, setErrorTasks] = useState(null);
+
+  useEffect(() => {
+    const fetchProjectTasks = async () => {
+      try {
+        setLoadingTasks(true);
+        setErrorTasks(null);
+        const response = await axiosInstance.get(`/tasks?project_id=${projectId}`);
+        // Assuming response.data.tasks is an array of task objects
+        setAllTasks(response.data.tasks);
+      } catch (error) {
+        console.error("Error fetching project tasks:", error);
+        setErrorTasks("Failed to load project tasks.");
+      } finally {
+        setLoadingTasks(false);
+      }
+    };
+
+    if (projectId) {
+      fetchProjectTasks();
+    }
+  }, [projectId]);
+
   // Filter tasks based on the selected status
   const filteredTasks = taskFilter === 'all' ? allTasks : allTasks.filter(t => t.status === taskFilter);
 

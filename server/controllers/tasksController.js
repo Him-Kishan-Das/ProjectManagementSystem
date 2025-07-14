@@ -1,4 +1,5 @@
 import Tasks from '../models/Tasks.js';
+import mongoose from 'mongoose';
 
 export const assignTasks = async (req, res) => {
     try {
@@ -46,6 +47,39 @@ export const assignTasks = async (req, res) => {
     } catch (error) {
         console.error('Error creating tasks: ', error);
         // Send a more informative error message to the client
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+
+export const getTasksByProjectId = async (req, res) => {
+    try {
+        const projectId = req.query.project_id;
+
+        if (!projectId) {
+            return res.status(400).json({ message: 'Project ID is required' });
+        }
+
+        if (!mongoose.Types.ObjectId.isValid(projectId)) {
+            return res.status(400).json({ message: 'Invalid Project ID format' });
+        }
+
+        const tasks = await Tasks.find({ project_id: projectId });
+
+        if (!tasks || tasks.length === 0) {
+            return res.status(200).json({
+                message: 'No tasks found for this project.',
+                tasks: []
+            });
+        }
+
+        res.status(200).json({
+            message: `${tasks.length} tasks found for project ${projectId}`,
+            tasks: tasks
+        });
+
+    } catch (error) {
+        console.error('Error fetching tasks by project ID: ', error);
         res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
